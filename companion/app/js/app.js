@@ -144,7 +144,7 @@ async function allowInstall() {
 }
 
 async function startScanner() {
-  if (typeof Html5Qrcode === "undefined") return toast("QR library not loaded (no internet?)", true);
+  if (typeof Html5Qrcode === "undefined") return toast("QR library failed to load", true);
   if (enpaf.isAndroid) await enpaf.permissions.request(["CAMERA"]);
   $("reader-card").classList.remove("hidden");
   scanner = new Html5Qrcode("reader");

@@ -676,6 +676,9 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
+        // Let getUserMedia camera/mic previews autoplay without a user gesture,
+        // otherwise the <video> element stays black (e.g. the QR scanner).
+        s.setMediaPlaybackRequiresUserGesture(false);
         webView.setWebViewClient(new WebViewClient());
         // Grant in-WebView permission requests (camera/mic for getUserMedia).
         // The app must also hold the CAMERA/RECORD_AUDIO runtime permission.
