@@ -5,7 +5,6 @@ Flask-based dev server with WebSocket bridge, hot-reload, and static file servin
 
 import logging
 import os
-import sys
 import threading
 import time
 import mimetypes
@@ -45,18 +44,37 @@ class DevServer:
         self._watcher_thread: Optional[threading.Thread] = None
         self._running = False
 
+    @staticmethod
+    def _cors_origins(host: str, port: int):
+        """Allowed Socket.IO origins. Loopback hosts get a same-origin allow-list
+        (blocks cross-site WebSocket hijacking); an explicit non-loopback bind
+        opts into open CORS so LAN browsers can still connect."""
+        if host in ("127.0.0.1", "localhost"):
+            return [f"http://localhost:{port}", f"http://127.0.0.1:{port}"]
+        return "*"
+
     def create_flask_app(self) -> Flask:
         """Create and configure the Flask application."""
         flask_app = Flask(
             __name__,
             static_folder=None,  # We handle static files ourselves
         )
-        flask_app.config["SECRET_KEY"] = "enpaf-dev-secret"
+        flask_app.config["SECRET_KEY"] = os.environ.get("ENPAF_SECRET_KEY", "enpaf-dev-secret")
+
+        # Lock Socket.IO to same-origin in the normal (loopback) case so a random
+        # web page you have open can't open a WebSocket to the dev server and
+        # drive the bridge / storage (cross-site WebSocket hijacking).
+        cors_origins = self._cors_origins(self.host, self.port)
+        if cors_origins == "*":
+            logger.warning(
+                "Dev server bound to %s — Socket.IO CORS is open (*). "
+                "Only do this on a trusted network.", self.host,
+            )
 
         # Initialize SocketIO
         self.socketio = SocketIO(
             flask_app,
-            cors_allowed_origins="*",
+            cors_allowed_origins=cors_origins,
             async_mode="threading",
             logger=False,
             engineio_logger=False,
@@ -245,8 +263,13 @@ class DevServer:
             if not path or path == "/":
                 path = "index.html"
 
-            # Serve static files
-            file_path = os.path.join(app_dir, path)
+            # Resolve within app_dir and reject path traversal (e.g. ../../etc).
+            # The .html branch below opens files directly, so it can't rely on
+            # send_from_directory's built-in protection — guard here for all types.
+            app_root = os.path.realpath(app_dir)
+            file_path = os.path.realpath(os.path.join(app_dir, path))
+            if file_path != app_root and not file_path.startswith(app_root + os.sep):
+                return "403 — Forbidden", 403
             if os.path.isfile(file_path):
                 # For HTML files, inject bridge
                 if path.endswith(".html"):

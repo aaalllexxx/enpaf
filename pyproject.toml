@@ -52,8 +52,11 @@ test = ["pytest>=7.0.0"]
 paf = "enpaf.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/enpaf/enpaf"
-Documentation = "https://enpaf.dev"
+Homepage = "https://github.com/aaalllexxx/enpaf"
+Repository = "https://github.com/aaalllexxx/enpaf"
+Documentation = "https://github.com/aaalllexxx/enpaf/wiki"
+Issues = "https://github.com/aaalllexxx/enpaf/issues"
+Changelog = "https://github.com/aaalllexxx/enpaf/releases"
 
 [tool.setuptools]
 include-package-data = true

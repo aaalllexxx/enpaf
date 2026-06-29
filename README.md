@@ -835,7 +835,7 @@ enpaf.nfc.onTag(async (tag) => {                 // метку поднесли 
 
 ```javascript
 // файл: app/js/app.js  — РЕКОМЕНДУЕТСЯ (arm → поднести метку)
-const r = await enpaf.nfc.armUri("https://enpaf.dev");  // ждёт касания метки
+const r = await enpaf.nfc.armUri("https://example.com");  // ждёт касания метки
 // r = {written: true, bytes: N} либо {written:false, note:"…"}
 await enpaf.nfc.armText("Привет, NFC");
 await enpaf.nfc.armWifi("МояСеть", "пароль123");
@@ -850,7 +850,7 @@ await enpaf.nfc.armLock();                               // заблокиров
 ```javascript
 // файл: app/js/app.js
 await enpaf.nfc.writeText("Привет, NFC");           // текст
-await enpaf.nfc.writeUri("https://enpaf.dev");      // ссылка (URL)
+await enpaf.nfc.writeUri("https://example.com");      // ссылка (URL)
 await enpaf.nfc.writeUri("tel:+79991234567");       // телефон
 await enpaf.nfc.writeUri("mailto:hi@example.com");  // email
 await enpaf.nfc.writeUri("geo:55.75,37.61");        // координаты
@@ -860,7 +860,7 @@ await enpaf.nfc.writeContact({ name: "Alex", phone: "+7999", email: "a@b.c" }); 
 await enpaf.nfc.writeMime("application/json", '{"id":42}');                      // MIME
 // Несколько записей в одном сообщении:
 await enpaf.nfc.writeRecords([
-    { kind: "uri", uri: "https://enpaf.dev" },
+    { kind: "uri", uri: "https://example.com" },
     { kind: "app", package: "com.example.myapp" },
 ]);
 ```
@@ -872,7 +872,7 @@ await enpaf.nfc.writeRecords([
 @app.bridge_handler("write_card")
 def write_card(params):
     app.api.nfc_write_text("Привет")
-    app.api.nfc_write_uri("https://enpaf.dev")
+    app.api.nfc_write_uri("https://example.com")
     app.api.nfc_write_app("com.example.myapp")
     app.api.nfc_write_wifi("МояСеть", "пароль123")
     return {"ok": True}
