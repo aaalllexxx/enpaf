@@ -7,7 +7,7 @@ name = "enpaf"
 version = "1.1.0"
 description = "ENPAF — Python + Web framework for building Android APK applications"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "PolyForm Noncommercial License 1.0.0"}
 requires-python = ">=3.9"
 authors = [
     {name = "ENPAF Team"}
@@ -16,7 +16,8 @@ keywords = ["android", "apk", "python", "webview", "framework", "mobile"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: Free for non-commercial use",
+    "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Environment :: Console",
     "Environment :: Web Environment",
@@ -45,6 +46,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["build>=1.0.0", "twine>=5.0.0"]
+test = ["pytest>=7.0.0"]
 
 [project.scripts]
 paf = "enpaf.cli.main:main"
@@ -66,3 +68,8 @@ enpaf = [
     "builder/templates/*",
 ]
 enpaf_bridge = ["*.js"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "-ra"
