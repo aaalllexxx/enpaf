@@ -1,4 +1,7 @@
-/* ENPAF Companion — developer tools + project loader */
+/* ENPAF Companion — focused project loader for development.
+ * Tabs: Connect (load & install a build), Logs (download/install activity),
+ * Settings (security, install permission, data, about).
+ */
 
 const $ = (id) => document.getElementById(id);
 const isDev = !enpaf.isAndroid;
@@ -24,9 +27,10 @@ enpaf.ready(() => {
   initLock();
   initNav();
   initConnect();
-  initDeviceTab();
-  initTools();
+  initLogs();
   initSettings();
+  refreshSelfNetwork();
+  checkInstallPermission();
 });
 
 // ─────────────────────────── Biometric lock ───────────────────────────
@@ -48,21 +52,45 @@ async function tryUnlock() {
 }
 
 // ─────────────────────────── Navigation ───────────────────────────
+const TAB_TITLES = { connect: "Project loader", logs: "Activity log", settings: "Settings" };
 function initNav() {
-  document.querySelectorAll(".tab").forEach((tab) => {
-    tab.addEventListener("click", () => switchTab(tab.dataset.tab));
-  });
+  document.querySelectorAll(".tab").forEach((tab) =>
+    tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
 }
-const TAB_TITLES = { connect: "Connect", device: "Device", tools: "Tools", settings: "Settings" };
 function switchTab(name) {
   document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
   document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.dataset.view === name));
-  $("appbar-sub").textContent = TAB_TITLES[name] || "Developer tools";
-  if (name === "device") refreshDevice();
-  if (name === "tools") refreshPermissions();
+  $("appbar-sub").textContent = TAB_TITLES[name] || "Project loader";
+  if (name === "logs") renderLog();
   if (name === "settings") refreshSettings();
-  if (name !== "device") stopSensors();
+  if (name === "connect") { refreshSelfNetwork(); checkInstallPermission(); }
 }
+
+// ═══════════════════════════ ACTIVITY LOG ═══════════════════════════
+let LOG = [];
+function logLine(msg, kind) {
+  const time = new Date().toLocaleTimeString();
+  LOG.push({ time, msg, kind: kind || "info" });
+  if (LOG.length > 200) LOG = LOG.slice(-200);
+  const view = document.querySelector('[data-view="logs"]');
+  if (view && view.classList.contains("active")) renderLog();
+}
+function initLogs() {
+  $("btn-clear-log").onclick = () => { LOG = []; renderLog(); };
+  $("btn-copy-log").onclick = () => {
+    const text = LOG.map((e) => `[${e.time}] ${e.msg}`).join("\n");
+    enpaf.device.clipboard(text || "");
+    toast(LOG.length ? "Log copied" : "Log is empty");
+  };
+}
+function renderLog() {
+  const box = $("logbox");
+  if (!LOG.length) { box.innerHTML = '<div class="empty">No activity yet.</div>'; return; }
+  box.innerHTML = LOG.map((e) =>
+    `<div class="logline ${e.kind}"><span class="t">${e.time}</span> ${escapeHtml(e.msg)}</div>`).join("");
+  box.scrollTop = box.scrollHeight;
+}
+function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 
 // ═══════════════════════════ CONNECT (loader) ═══════════════════════════
 let scanner = null, current = null, pingTimer = null;
@@ -72,7 +100,7 @@ function initConnect() {
   $("btn-close-scanner").onclick = stopScanner;
   $("btn-manual").onclick = () => {
     const url = $("manual-url").value.trim();
-    if (!url) return toast("Enter an APK URL", true);
+    if (!url) return toast("Enter a build URL", true);
     showFlow({ url });
   };
   $("btn-flow-back").onclick = backToHome;
@@ -80,8 +108,39 @@ function initConnect() {
   $("btn-wifi-connect").onclick = connectWifi;
   $("btn-install").onclick = installApp;
   $("btn-clear-history").onclick = async () => { await save("history", []); renderHistory(); };
+  $("btn-allow-install").onclick = allowInstall;
   bindDownloadEvents();
   renderHistory();
+}
+
+// This device's Wi-Fi / IP — helps match the dev machine's network.
+async function refreshSelfNetwork() {
+  const el = $("net-self");
+  if (!el) return;
+  if (isDev) { el.textContent = "dev (browser)"; return; }
+  try {
+    const w = await enpaf.wifi.info();
+    const ssid = w.ssid || w.SSID || null;
+    const ip = w.ip || w.ip_address || w.ipAddress || null;
+    el.textContent = [ssid, ip].filter(Boolean).join(" · ") || "Wi-Fi off?";
+    el.dataset.ssid = ssid || "";
+  } catch (e) { el.textContent = "—"; }
+}
+
+// Install-permission gate (Android 8+ needs a per-app grant).
+async function checkInstallPermission() {
+  try {
+    const r = await enpaf.call("can_install", {});
+    const ok = !!r.can_install;
+    $("perm-banner").classList.toggle("hidden", ok);
+    const st = $("install-perm-state");
+    if (st) { st.textContent = ok ? "Allowed ✓" : "Blocked"; st.className = ok ? "ok-text" : "warn-text"; }
+    return ok;
+  } catch (e) { return false; }
+}
+async function allowInstall() {
+  try { await enpaf.call("request_install_permission", {}); logLine("Opened install-permission settings"); }
+  catch (e) { toast("Could not open settings", true); }
 }
 
 async function startScanner() {
@@ -102,6 +161,7 @@ function onScan(text) {
   const p = new URLSearchParams(text.split("?")[1] || "");
   const url = p.get("url");
   if (!url) return toast("Invalid ENPAF QR", true);
+  logLine("Scanned QR → " + url);
   showFlow({ url, ssid: p.get("ssid"), token: p.get("token") });
 }
 
@@ -115,8 +175,12 @@ async function showFlow(proj) {
   current = proj;
   $("flow-card").classList.remove("hidden");
   $("reader-card").classList.add("hidden");
-  $("flow-ssid").textContent = proj.ssid || "Local network";
   $("flow-url").textContent = proj.url;
+  // Compare the server's Wi-Fi with ours so a mismatch is obvious.
+  const mine = ($("net-self").dataset.ssid || "").trim();
+  let ssidLabel = proj.ssid || "Local network";
+  if (proj.ssid && mine && proj.ssid !== mine) ssidLabel = `${proj.ssid} ⚠ (you: ${mine})`;
+  $("flow-ssid").textContent = ssidLabel;
   $("btn-wifi-connect").style.display = proj.ssid ? "" : "none";
   setStatus("Waiting for server…", "warn");
   $("flow-card").scrollIntoView({ behavior: "smooth" });
@@ -150,43 +214,53 @@ async function connectWifi() {
     b.textContent = res.ok ? "Wi-Fi requested ✓" : "Failed";
     if (!res.ok) toast(res.error || res.note || "Connect failed", true);
   } catch (e) { toast("Wi-Fi error", true); }
-  setTimeout(() => { b.textContent = "Connect Wi-Fi"; b.disabled = false; }, 2500);
+  setTimeout(() => { b.textContent = "Connect Wi-Fi"; b.disabled = false; refreshSelfNetwork(); }, 2500);
 }
 
 async function installApp() {
   if (!current || !current.url) return;
+  if (!(await checkInstallPermission())) {
+    toast("Allow installs first", true);
+    return;
+  }
   const url = current.token ? `${current.url}?token=${current.token}` : current.url;
   $("btn-install").disabled = true; $("btn-install").textContent = "Starting…";
   $("progress").classList.remove("hidden"); $("progress-text").classList.remove("hidden");
   $("progress-fill").style.width = "0%"; $("progress-text").textContent = "0%";
+  logLine("Install requested → " + current.url);
   try {
     const res = await enpaf.call("install_apk", { url });
-    if (res && res.error) { toast(res.error, true); resetInstall(); }
+    if (res && res.error) { toast(res.error, true); logLine("Install error: " + res.error, "err"); resetInstall(); }
     await saveHistory(current);
-  } catch (e) { toast("Install failed", true); resetInstall(); }
+  } catch (e) { toast("Install failed", true); logLine("Install failed: " + e.message, "err"); resetInstall(); }
 }
 function resetInstall() {
-  $("btn-install").disabled = false; $("btn-install").textContent = "⬇ Download & Install";
+  $("btn-install").disabled = false; $("btn-install").textContent = "Download & Install";
   $("progress").classList.add("hidden"); $("progress-text").classList.add("hidden");
 }
 function bindDownloadEvents() {
-  enpaf.on("download_start", () => { $("btn-install").textContent = "Downloading…"; });
+  enpaf.on("download_start", () => { $("btn-install").textContent = "Downloading…"; logLine("Download started"); });
   enpaf.on("download_progress", (d) => {
     $("progress").classList.remove("hidden"); $("progress-text").classList.remove("hidden");
     $("progress-fill").style.width = d.percent + "%";
     const mb = (b) => (b / 1048576).toFixed(1);
     $("progress-text").textContent = d.total ? `${d.percent}% (${mb(d.downloaded)} / ${mb(d.total)} MB)` : d.percent + "%";
+    if (d.percent === 0 || d.percent === 50 || d.percent === 100) logLine(`Downloading… ${d.percent}%`);
   });
-  enpaf.on("download_complete", () => { $("btn-install").textContent = "Opening installer…"; });
-  enpaf.on("install_prompt", () => { toast("Installer opened"); setTimeout(resetInstall, 2000); });
+  enpaf.on("download_complete", (d) => {
+    $("btn-install").textContent = "Opening installer…";
+    logLine("Download complete" + (d && d.bytes ? ` (${(d.bytes / 1048576).toFixed(1)} MB)` : ""), "ok");
+  });
+  enpaf.on("install_prompt", () => { toast("Installer opened"); logLine("System installer opened"); setTimeout(resetInstall, 2000); });
   enpaf.on("install_status", (d) => {
-    if (d.success) toast("App installed ✓");
-    else if (d.status !== 3) toast("Install failed" + (d.message ? ": " + d.message : ""), true);
+    if (d.success) { toast("App installed ✓"); logLine("Installed ✓", "ok"); }
+    else if (d.status !== 3) { toast("Install failed" + (d.message ? ": " + d.message : ""), true); logLine("Install failed" + (d.message ? ": " + d.message : ""), "err"); }
+    else { logLine("Install cancelled"); }
     resetInstall();
   });
   enpaf.on("install_error", (d) => {
-    if (d.error === "install_permission_required") toast("Allow installs, then tap Install again", true);
-    else toast("Install error: " + (d.error || ""), true);
+    if (d.error === "install_permission_required") { toast("Allow installs, then tap Install again", true); logLine("Install blocked — permission required", "err"); checkInstallPermission(); }
+    else { toast("Install error: " + (d.error || ""), true); logLine("Install error: " + (d.error || ""), "err"); }
     resetInstall();
   });
 }
@@ -195,149 +269,29 @@ function bindDownloadEvents() {
 async function saveHistory(proj) {
   let h = await load("history", []);
   h = h.filter((p) => p.url !== proj.url);
-  h.unshift({ url: proj.url, ssid: proj.ssid || null, ts: Date.now() });
+  h.unshift({ url: proj.url, ssid: proj.ssid || null, token: proj.token || null, ts: Date.now() });
   if (h.length > 12) h = h.slice(0, 12);
   await save("history", h); renderHistory();
 }
 async function renderHistory() {
   const h = await load("history", []);
   const list = $("history");
-  if (!h.length) { list.innerHTML = '<li class="empty">No projects yet.</li>'; return; }
+  if (!h.length) { list.innerHTML = '<li class="empty">No builds yet.</li>'; return; }
   list.innerHTML = "";
   h.forEach((p) => {
     const li = document.createElement("li"); li.className = "row-item";
-    li.innerHTML = `<div><div class="name">${p.ssid || "Local app"}</div><div class="sub">${p.url}</div></div>`;
-    const b = document.createElement("button"); b.className = "btn btn-secondary sm"; b.textContent = "Open";
-    b.onclick = () => showFlow({ url: p.url, ssid: p.ssid });
-    li.appendChild(b); list.appendChild(li);
+    const when = p.ts ? new Date(p.ts).toLocaleString() : "";
+    li.innerHTML = `<div><div class="name">${p.ssid || "Local build"}</div><div class="sub mono">${p.url}</div><div class="sub muted">${when}</div></div>`;
+    const actions = document.createElement("div"); actions.className = "row";
+    const reinstall = document.createElement("button"); reinstall.className = "btn btn-secondary sm"; reinstall.textContent = "Reinstall";
+    reinstall.onclick = () => showFlow({ url: p.url, ssid: p.ssid, token: p.token });
+    const copy = document.createElement("button"); copy.className = "btn btn-ghost sm"; copy.textContent = "Copy";
+    copy.onclick = () => { enpaf.device.clipboard(p.url); toast("URL copied"); };
+    const del = document.createElement("button"); del.className = "btn btn-ghost sm"; del.textContent = "✕";
+    del.onclick = async () => { let hh = await load("history", []); hh = hh.filter((x) => x.url !== p.url); await save("history", hh); renderHistory(); };
+    actions.append(reinstall, copy, del);
+    li.appendChild(actions); list.appendChild(li);
   });
-}
-
-// ═══════════════════════════ DEVICE ═══════════════════════════
-function initDeviceTab() {
-  $("btn-device-refresh").onclick = refreshDevice;
-  $("sensors-toggle").addEventListener("change", (e) => (e.target.checked ? startSensors() : stopSensors()));
-}
-async function refreshDevice() {
-  try {
-    const [info, batt, net] = await Promise.all([
-      enpaf.mod("device", "info"), enpaf.battery.info(), enpaf.battery.network(),
-    ]);
-    const rows = {
-      Platform: info.platform, Model: info.model, "OS version": info.os_version,
-      "App version": info.app_version, Screen: info.screen_width ? `${info.screen_width}×${info.screen_height}` : "—",
-      Battery: batt.level != null ? `${batt.level}% ${batt.charging ? "⚡" : ""}` : "—",
-      Network: net.connected ? net.type : "offline",
-    };
-    $("device-info").innerHTML = Object.entries(rows)
-      .map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v ?? "—"}</b></div>`).join("");
-  } catch (e) { $("device-info").innerHTML = `<div class="empty">Error: ${e.message}</div>`; }
-}
-
-let sensorTimer = null;
-const SENSORS = [["accelerometer", "Accel (m/s²)"], ["gyroscope", "Gyro (rad/s)"], ["magnetometer", "Magnet (µT)"], ["light", "Light (lx)"], ["proximity", "Proximity"], ["pressure", "Pressure (hPa)"]];
-function startSensors() {
-  const grid = $("sensor-grid");
-  grid.innerHTML = SENSORS.map(([k, l]) => `<div class="sensor-card"><div class="l">${l}</div><div class="v" id="sv-${k}">…</div></div>`).join("");
-  const tick = async () => {
-    for (const [k] of SENSORS) {
-      try {
-        const r = await enpaf.sensors.read(k);
-        const el = $("sv-" + k); if (!el) continue;
-        el.textContent = Array.isArray(r.values) ? r.values.map((n) => (+n).toFixed(2)).join(", ") : (r.values ?? (r.available ? "—" : "n/a"));
-      } catch (e) {}
-    }
-  };
-  tick(); sensorTimer = setInterval(tick, 450);
-}
-function stopSensors() {
-  if (sensorTimer) { clearInterval(sensorTimer); sensorTimer = null; }
-  const t = $("sensors-toggle"); if (t) t.checked = false;
-}
-
-// ═══════════════════════════ TOOLS ═══════════════════════════
-function initTools() {
-  $("btn-wifi-scan").onclick = wifiScan;
-  $("btn-bt-scan").onclick = btScan;
-  $("btn-nfc-read").onclick = () => { $("nfc-out").textContent = "Hold an NFC tag to the phone…"; nfcRead(); };
-  $("btn-perm-refresh").onclick = refreshPermissions;
-  document.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => quickAction(b.dataset.act)));
-
-  enpaf.wifi.onResult((n) => addRow("wifi-list", `${n.secure ? "🔒 " : ""}${n.ssid}`, `${n.rssi} dBm`, "wifi-" + n.ssid));
-  enpaf.wifi.onFinished(() => emptyIfBlank("wifi-list", "No networks found"));
-  enpaf.bluetooth.onFound((d) => addRow("bt-list", d.name || "(unnamed)", `${d.address}${d.rssi ? " · " + d.rssi + " dBm" : ""}`, "bt-" + d.address));
-  enpaf.bluetooth.onDiscoveryFinished(() => emptyIfBlank("bt-list", "No devices found"));
-  enpaf.nfc.onTag(() => nfcRead());
-}
-function addRow(listId, name, sub, key) {
-  const list = $(listId);
-  if (list.querySelector(".empty")) list.innerHTML = "";
-  if (key && list.querySelector(`[data-k="${key}"]`)) return;
-  const li = document.createElement("li"); li.className = "row-item"; if (key) li.dataset.k = key;
-  li.innerHTML = `<div><div class="name">${name}</div><div class="sub">${sub}</div></div>`;
-  list.appendChild(li);
-}
-function emptyIfBlank(id, msg) { const l = $(id); if (!l.children.length || l.querySelector(".empty")) l.innerHTML = `<li class="empty">${msg}</li>`; }
-
-async function wifiScan() {
-  if (enpaf.isAndroid) await enpaf.permissions.request(["FINE_LOCATION"]);
-  $("wifi-list").innerHTML = '<li class="empty">Scanning…</li>';
-  await enpaf.wifi.scan();
-}
-async function btScan() {
-  if (enpaf.isAndroid) await enpaf.permissions.request(["BLUETOOTH_SCAN", "BLUETOOTH_CONNECT", "FINE_LOCATION"]);
-  $("bt-list").innerHTML = '<li class="empty">Scanning…</li>';
-  const p = await enpaf.bluetooth.paired(); (p.devices || []).forEach((d) => addRow("bt-list", d.name || "(unnamed)", d.address + " · paired", "bt-" + d.address));
-  await enpaf.bluetooth.discover();
-}
-async function nfcRead() {
-  try {
-    const r = await enpaf.nfc.read();
-    if (!r.tag) { $("nfc-out").textContent = r.note || "No tag."; return; }
-    const recs = (r.records || []).map((x) => x.type === "uri" ? "🔗 " + x.uri : x.type === "text" ? "📝 " + x.text : "· " + x.type).join(" | ");
-    $("nfc-out").innerHTML = `<b>ID:</b> ${r.id || "—"}<br>${recs || "(empty)"}` + (r.dev ? " <span class='muted'>(dev)</span>" : "");
-  } catch (e) { $("nfc-out").textContent = "Error: " + e.message; }
-}
-
-async function quickAction(act) {
-  const out = $("action-out"); out.textContent = "";
-  try {
-    if (act === "vibrate") { enpaf.device.vibrate(140); out.textContent = "Vibrated."; }
-    else if (act === "toast") { enpaf.device.toast("Hello from Companion 👋"); }
-    else if (act === "notify") {
-      if (enpaf.isAndroid) await enpaf.permissions.request(["POST_NOTIFICATIONS"]);
-      await enpaf.notifications.notify({ title: "ENPAF Companion", text: "Test notification" });
-      out.textContent = "Notification sent.";
-    } else if (act === "clip-copy") { enpaf.device.clipboard("ENPAF Companion 🚀"); out.textContent = "Copied to clipboard."; }
-    else if (act === "clip-read") { const r = await enpaf.mod("device", "clipboard_get"); out.textContent = "Clipboard: " + (r.text || "(empty)"); }
-    else if (act === "share") { enpaf.device.share("Shared from ENPAF Companion", "ENPAF"); }
-    else if (act === "location") {
-      if (enpaf.isAndroid) await enpaf.permissions.request(["FINE_LOCATION"]);
-      const l = await enpaf.location.get();
-      out.textContent = l.fix ? `Lat ${(+l.latitude).toFixed(5)}, Lon ${(+l.longitude).toFixed(5)}` : (l.note || "No location");
-    } else if (act === "biometric") {
-      const r = await enpaf.biometric.authenticate({ title: "Biometric test" });
-      out.textContent = r.success ? "✓ Authenticated" : "✗ " + (r.error || "failed");
-    }
-  } catch (e) { out.textContent = "Error: " + e.message; }
-}
-
-const PERM_LIST = ["CAMERA", "RECORD_AUDIO", "FINE_LOCATION", "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT", "POST_NOTIFICATIONS", "NFC", "READ_CONTACTS"];
-async function refreshPermissions() {
-  const list = $("perm-list");
-  try {
-    const res = await enpaf.permissions.checkAll(PERM_LIST);
-    const granted = new Set(res.granted || []);
-    const full = (k) => "android.permission." + (k === "FINE_LOCATION" ? "ACCESS_FINE_LOCATION" : k === "RECORD_AUDIO" ? "RECORD_AUDIO" : k);
-    list.innerHTML = "";
-    PERM_LIST.forEach((k) => {
-      const ok = [...granted].some((g) => g.endsWith(k) || g.endsWith(full(k).split(".").pop()));
-      const li = document.createElement("li"); li.className = "perm-row";
-      li.innerHTML = `<span>${k}</span><span class="badge ${ok ? "granted" : "denied"}">${ok ? "granted" : "request"}</span>`;
-      if (!ok) li.querySelector(".badge").onclick = async () => { await enpaf.permissions.request([k]); refreshPermissions(); };
-      list.appendChild(li);
-    });
-  } catch (e) { list.innerHTML = `<li class="empty">Error: ${e.message}</li>`; }
 }
 
 // ═══════════════════════════ SETTINGS ═══════════════════════════
@@ -350,6 +304,12 @@ function initSettings() {
     await save("bio_lock", e.target.checked);
     toast(e.target.checked ? "Biometric lock enabled" : "Lock disabled");
   });
+  $("btn-fix-install").onclick = allowInstall;
+  $("btn-clear-data").onclick = async () => {
+    await save("history", []);
+    LOG = []; renderLog(); renderHistory();
+    toast("History & cache cleared");
+  };
 }
 async function refreshSettings() {
   $("bio-toggle").checked = await load("bio_lock", false);
@@ -357,10 +317,15 @@ async function refreshSettings() {
     const av = await enpaf.biometric.available();
     $("bio-state").textContent = av.available ? "Biometrics available on this device." : `Not enrolled/available (code ${av.code ?? "?"}).`;
   } catch (e) {}
+  checkInstallPermission();
   try {
     const cfg = await enpaf.call("__enpaf_get_config", {});
     const info = await enpaf.mod("device", "info");
-    const rows = { App: cfg.name || "ENPAF Companion", Version: cfg.version || "—", Package: cfg.package || "—", Platform: info.platform, Model: info.model };
-    $("about-info").innerHTML = Object.entries(rows).map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v ?? "—"}</b></div>`).join("");
+    const rows = {
+      App: cfg.name || "ENPAF Companion", Version: cfg.version || "—", Package: cfg.package || "—",
+      Platform: info.platform, Model: info.model, "OS version": info.os_version,
+    };
+    $("about-info").innerHTML = Object.entries(rows)
+      .map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v ?? "—"}</b></div>`).join("");
   } catch (e) {}
 }
