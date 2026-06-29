@@ -1,7 +1,7 @@
 {
     "name": "ENPAF Companion",
     "package": "com.enpaf.companion",
-    "version": "1.0.14",
+    "version": "1.1.0",
     "description": "Companion app for debugging ENPAF projects",
     "author": "PAF",
     "orientation": "portrait",

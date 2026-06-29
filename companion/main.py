@@ -158,5 +158,122 @@ def install_apk(payload):
     return {"ok": True}
 
 
+@app.bridge_handler("probe_url")
+def probe_url(payload):
+    """HEAD a URL and return real headers (status, size, Last-Modified, ETag) +
+    round-trip ms. Used by the connection tester and the auto-reload watcher —
+    JS fetch(no-cors) cannot read these, but Python can.
+    """
+    import time
+    url = payload.get("url")
+    if not url:
+        return {"ok": False, "error": "no url"}
+    if not app.api._is_android:
+        return {"ok": True, "status": 200, "length": 36_700_000,
+                "last_modified": "dev", "etag": "dev", "ms": 11, "dev": True}
+
+    def _len(v):
+        if not v:
+            return 0
+        v = str(v)
+        if "/" in v:                       # Content-Range: bytes 0-0/12345
+            v = v.split("/")[-1]
+        try:
+            return int(v)
+        except ValueError:
+            return 0
+
+    try:
+        t0 = time.time()
+        req = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(req, timeout=6) as r:
+            return {"ok": True, "status": getattr(r, "status", 200),
+                    "length": _len(r.getheader("Content-Length")),
+                    "last_modified": r.getheader("Last-Modified") or "",
+                    "etag": r.getheader("ETag") or "",
+                    "ms": int((time.time() - t0) * 1000)}
+    except Exception:
+        # Some static servers reject HEAD — fall back to a 1-byte ranged GET.
+        try:
+            t0 = time.time()
+            req = urllib.request.Request(url, headers={"Range": "bytes=0-0"})
+            with urllib.request.urlopen(req, timeout=6) as r:
+                return {"ok": True, "status": getattr(r, "status", 200),
+                        "length": _len(r.getheader("Content-Range") or r.getheader("Content-Length")),
+                        "last_modified": r.getheader("Last-Modified") or "",
+                        "etag": r.getheader("ETag") or "",
+                        "ms": int((time.time() - t0) * 1000)}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+
+@app.bridge_handler("diag_info")
+def diag_info(payload):
+    """A development environment report for this device: Android/API, model,
+    ABI, screen, RAM, storage, WebView version, install permission."""
+    out = {}
+    try:
+        out.update(app.api.get_device_info() or {})
+    except Exception:
+        pass
+
+    if not app.api._is_android:
+        out.update({"dev": True, "manufacturer": "Dev", "model": "Desktop",
+                    "android": "—", "api_level": 34, "abi": "x86_64",
+                    "ram_total": 8 * 10**9, "ram_avail": 4 * 10**9,
+                    "storage_total": 256 * 10**9, "storage_free": 64 * 10**9,
+                    "webview": "—", "can_install": True})
+        return out
+
+    try:
+        from android.os import Build
+        out["manufacturer"] = str(Build.MANUFACTURER)
+        out["model"] = str(Build.MODEL)
+        out["android"] = str(Build.VERSION.RELEASE)
+        out["api_level"] = int(Build.VERSION.SDK_INT)
+        out["abi"] = ", ".join(str(a) for a in Build.SUPPORTED_ABIS)
+    except Exception as e:
+        out["build_err"] = str(e)
+
+    ctx = app.api._activity
+    try:
+        from android.content import Context
+        from android.app import ActivityManager
+        am = ctx.getSystemService(Context.ACTIVITY_SERVICE)
+        mi = ActivityManager.MemoryInfo()
+        am.getMemoryInfo(mi)
+        out["ram_total"] = int(mi.totalMem)
+        out["ram_avail"] = int(mi.availMem)
+    except Exception as e:
+        out["ram_err"] = str(e)
+
+    try:
+        from android.os import StatFs, Environment
+        sf = StatFs(Environment.getDataDirectory().getPath())
+        out["storage_total"] = int(sf.getTotalBytes())
+        out["storage_free"] = int(sf.getAvailableBytes())
+    except Exception as e:
+        out["storage_err"] = str(e)
+
+    try:
+        from android.webkit import WebView
+        pkg = WebView.getCurrentWebViewPackage()
+        if pkg is not None:
+            out["webview"] = str(pkg.versionName)
+    except Exception as e:
+        out["webview_err"] = str(e)
+
+    try:
+        from android.os import Build as _B
+        if _B.VERSION.SDK_INT >= 26:
+            out["can_install"] = bool(ctx.getPackageManager().canRequestPackageInstalls())
+        else:
+            out["can_install"] = True
+    except Exception:
+        pass
+
+    return out
+
+
 # Start the application
 app.run()

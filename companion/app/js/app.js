@@ -1,6 +1,7 @@
-/* ENPAF Companion — focused project loader for development.
- * Tabs: Connect (load & install a build), Logs (download/install activity),
- * Settings (security, install permission, data, about).
+/* ENPAF Companion — developer project loader.
+ * Tabs: Connect (load & install builds), Logs, Device (diagnostics + tester),
+ * Settings. Dev features: auto-reload watch, paste URL, favorites,
+ * device diagnostics, connection tester.
  */
 
 const $ = (id) => document.getElementById(id);
@@ -13,6 +14,9 @@ function toast(msg, err) {
   clearTimeout(toast._t);
   toast._t = setTimeout(() => (t.className = "toast" + (err ? " err" : "")), 2600);
 }
+function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+function formatBytes(n) { return n ? (n / 1073741824 >= 1 ? (n / 1073741824).toFixed(1) + " GB" : (n / 1048576).toFixed(1) + " MB") : "—"; }
+function hostOf(url) { try { return new URL(url).host; } catch (e) { return url; } }
 
 // ── Storage helpers (values are JSON strings) ──
 async function load(key, fallback) {
@@ -28,9 +32,11 @@ enpaf.ready(() => {
   initNav();
   initConnect();
   initLogs();
+  initDevice();
   initSettings();
   refreshSelfNetwork();
   checkInstallPermission();
+  renderFavorites();
 });
 
 // ─────────────────────────── Biometric lock ───────────────────────────
@@ -52,7 +58,7 @@ async function tryUnlock() {
 }
 
 // ─────────────────────────── Navigation ───────────────────────────
-const TAB_TITLES = { connect: "Project loader", logs: "Activity log", settings: "Settings" };
+const TAB_TITLES = { connect: "Project loader", logs: "Activity log", device: "Device diagnostics", settings: "Settings" };
 function initNav() {
   document.querySelectorAll(".tab").forEach((tab) =>
     tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
@@ -62,15 +68,15 @@ function switchTab(name) {
   document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.dataset.view === name));
   $("appbar-sub").textContent = TAB_TITLES[name] || "Project loader";
   if (name === "logs") renderLog();
+  if (name === "device") { refreshDiag(); if (current && current.url && !$("probe-url").value) $("probe-url").value = current.url; }
   if (name === "settings") refreshSettings();
-  if (name === "connect") { refreshSelfNetwork(); checkInstallPermission(); }
+  if (name === "connect") { refreshSelfNetwork(); checkInstallPermission(); renderFavorites(); }
 }
 
 // ═══════════════════════════ ACTIVITY LOG ═══════════════════════════
 let LOG = [];
 function logLine(msg, kind) {
-  const time = new Date().toLocaleTimeString();
-  LOG.push({ time, msg, kind: kind || "info" });
+  LOG.push({ time: new Date().toLocaleTimeString(), msg, kind: kind || "info" });
   if (LOG.length > 200) LOG = LOG.slice(-200);
   const view = document.querySelector('[data-view="logs"]');
   if (view && view.classList.contains("active")) renderLog();
@@ -78,8 +84,7 @@ function logLine(msg, kind) {
 function initLogs() {
   $("btn-clear-log").onclick = () => { LOG = []; renderLog(); };
   $("btn-copy-log").onclick = () => {
-    const text = LOG.map((e) => `[${e.time}] ${e.msg}`).join("\n");
-    enpaf.device.clipboard(text || "");
+    enpaf.device.clipboard(LOG.map((e) => `[${e.time}] ${e.msg}`).join("\n") || "");
     toast(LOG.length ? "Log copied" : "Log is empty");
   };
 }
@@ -90,7 +95,6 @@ function renderLog() {
     `<div class="logline ${e.kind}"><span class="t">${e.time}</span> ${escapeHtml(e.msg)}</div>`).join("");
   box.scrollTop = box.scrollHeight;
 }
-function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 
 // ═══════════════════════════ CONNECT (loader) ═══════════════════════════
 let scanner = null, current = null, pingTimer = null;
@@ -103,14 +107,30 @@ function initConnect() {
     if (!url) return toast("Enter a build URL", true);
     showFlow({ url });
   };
+  $("btn-paste").onclick = pasteUrl;
   $("btn-flow-back").onclick = backToHome;
   $("btn-wifi-settings").onclick = () => enpaf.wifi.enable().catch(() => {});
   $("btn-wifi-connect").onclick = connectWifi;
   $("btn-install").onclick = installApp;
   $("btn-clear-history").onclick = async () => { await save("history", []); renderHistory(); };
   $("btn-allow-install").onclick = allowInstall;
+  $("btn-fav-add").onclick = addFavorite;
+  $("watch-toggle").addEventListener("change", (e) => (e.target.checked ? startWatch() : stopWatch()));
   bindDownloadEvents();
   renderHistory();
+}
+
+// Feature 2 — paste & auto-detect a build URL from the clipboard.
+async function pasteUrl() {
+  try {
+    const r = await enpaf.mod("device", "clipboard_get");
+    const text = ((r && r.text) || "").trim();
+    if (!text) return toast("Clipboard is empty", true);
+    if (text.startsWith("enpaf://debug")) { onScan(text); return; }
+    const m = text.match(/https?:\/\/\S+/);
+    if (m) { $("manual-url").value = m[0]; showFlow({ url: m[0] }); logLine("Pasted URL → " + m[0]); return; }
+    toast("No build URL in clipboard", true);
+  } catch (e) { toast("Clipboard unavailable", true); }
 }
 
 // This device's Wi-Fi / IP — helps match the dev machine's network.
@@ -167,6 +187,7 @@ function onScan(text) {
 
 function backToHome() {
   if (pingTimer) clearInterval(pingTimer);
+  stopWatch();
   current = null;
   $("flow-card").classList.add("hidden");
 }
@@ -175,8 +196,8 @@ async function showFlow(proj) {
   current = proj;
   $("flow-card").classList.remove("hidden");
   $("reader-card").classList.add("hidden");
+  $("watch-toggle").checked = false;
   $("flow-url").textContent = proj.url;
-  // Compare the server's Wi-Fi with ours so a mismatch is obvious.
   const mine = ($("net-self").dataset.ssid || "").trim();
   let ssidLabel = proj.ssid || "Local network";
   if (proj.ssid && mine && proj.ssid !== mine) ssidLabel = `${proj.ssid} ⚠ (you: ${mine})`;
@@ -219,10 +240,7 @@ async function connectWifi() {
 
 async function installApp() {
   if (!current || !current.url) return;
-  if (!(await checkInstallPermission())) {
-    toast("Allow installs first", true);
-    return;
-  }
+  if (!(await checkInstallPermission())) return toast("Allow installs first", true);
   const url = current.token ? `${current.url}?token=${current.token}` : current.url;
   $("btn-install").disabled = true; $("btn-install").textContent = "Starting…";
   $("progress").classList.remove("hidden"); $("progress-text").classList.remove("hidden");
@@ -265,6 +283,34 @@ function bindDownloadEvents() {
   });
 }
 
+// Feature 1 — auto-reload watch: poll the build URL and alert when it changes.
+let watch = { url: null, sig: null, timer: null };
+async function sigOf(url) {
+  try { const r = await enpaf.call("probe_url", { url }); return r.ok ? `${r.etag}|${r.last_modified}|${r.length}` : null; }
+  catch (e) { return null; }
+}
+async function startWatch() {
+  if (!current || !current.url) { $("watch-toggle").checked = false; return toast("Open a build first", true); }
+  watch.url = current.token ? `${current.url}?token=${current.token}` : current.url;
+  watch.sig = await sigOf(watch.url);
+  logLine("Watching build for changes…");
+  if (watch.timer) clearInterval(watch.timer);
+  watch.timer = setInterval(async () => {
+    const s = await sigOf(watch.url);
+    if (s && watch.sig && s !== watch.sig) {
+      watch.sig = s;
+      toast("New build available — reinstall");
+      logLine("New build detected on server", "ok");
+      enpaf.device.vibrate(120);
+    }
+  }, 5000);
+}
+function stopWatch() {
+  if (watch.timer) clearInterval(watch.timer);
+  watch.timer = null;
+  const t = $("watch-toggle"); if (t) t.checked = false;
+}
+
 // History
 async function saveHistory(proj) {
   let h = await load("history", []);
@@ -281,17 +327,104 @@ async function renderHistory() {
   h.forEach((p) => {
     const li = document.createElement("li"); li.className = "row-item";
     const when = p.ts ? new Date(p.ts).toLocaleString() : "";
-    li.innerHTML = `<div><div class="name">${p.ssid || "Local build"}</div><div class="sub mono">${p.url}</div><div class="sub muted">${when}</div></div>`;
+    li.innerHTML = `<div><div class="name">${escapeHtml(p.ssid || hostOf(p.url))}</div><div class="sub mono">${escapeHtml(p.url)}</div><div class="sub muted">${when}</div></div>`;
     const actions = document.createElement("div"); actions.className = "row";
     const reinstall = document.createElement("button"); reinstall.className = "btn btn-secondary sm"; reinstall.textContent = "Reinstall";
     reinstall.onclick = () => showFlow({ url: p.url, ssid: p.ssid, token: p.token });
-    const copy = document.createElement("button"); copy.className = "btn btn-ghost sm"; copy.textContent = "Copy";
-    copy.onclick = () => { enpaf.device.clipboard(p.url); toast("URL copied"); };
+    const star = document.createElement("button"); star.className = "btn btn-ghost sm"; star.textContent = "☆";
+    star.title = "Add to favorites";
+    star.onclick = () => addFavorite({ url: p.url, ssid: p.ssid, token: p.token });
     const del = document.createElement("button"); del.className = "btn btn-ghost sm"; del.textContent = "✕";
     del.onclick = async () => { let hh = await load("history", []); hh = hh.filter((x) => x.url !== p.url); await save("history", hh); renderHistory(); };
-    actions.append(reinstall, copy, del);
+    actions.append(reinstall, star, del);
     li.appendChild(actions); list.appendChild(li);
   });
+}
+
+// Feature 3 — favorites (pinned dev servers).
+async function addFavorite(proj) {
+  const p = proj && proj.url ? proj : current;
+  if (!p || !p.url) return toast("Open a build first", true);
+  let favs = await load("favorites", []);
+  if (favs.some((f) => f.url === p.url)) return toast("Already in favorites");
+  favs.unshift({ label: p.ssid || hostOf(p.url), url: p.url, ssid: p.ssid || null, token: p.token || null });
+  if (favs.length > 20) favs = favs.slice(0, 20);
+  await save("favorites", favs); renderFavorites(); toast("Saved to favorites ⭐");
+}
+async function renderFavorites() {
+  const favs = await load("favorites", []);
+  const card = $("fav-card"); const list = $("favorites");
+  card.classList.toggle("hidden", favs.length === 0);
+  list.innerHTML = "";
+  favs.forEach((f) => {
+    const li = document.createElement("li"); li.className = "row-item";
+    li.innerHTML = `<div><div class="name">⭐ ${escapeHtml(f.label || "Build")}</div><div class="sub mono">${escapeHtml(f.url)}</div></div>`;
+    const actions = document.createElement("div"); actions.className = "row";
+    const open = document.createElement("button"); open.className = "btn btn-secondary sm"; open.textContent = "Reinstall";
+    open.onclick = () => showFlow({ url: f.url, ssid: f.ssid, token: f.token });
+    const del = document.createElement("button"); del.className = "btn btn-ghost sm"; del.textContent = "✕";
+    del.onclick = async () => { let ff = await load("favorites", []); ff = ff.filter((x) => x.url !== f.url); await save("favorites", ff); renderFavorites(); };
+    actions.append(open, del); li.appendChild(actions); list.appendChild(li);
+  });
+}
+
+// ═══════════════════════════ DEVICE (diagnostics + tester) ═══════════════════════════
+let DIAG = null;
+function initDevice() {
+  $("btn-diag-refresh").onclick = refreshDiag;
+  $("btn-diag-copy").onclick = copyDiag;
+  $("btn-probe").onclick = runProbe;
+}
+
+// Feature 4 — device diagnostics.
+async function refreshDiag() {
+  const box = $("diag-info"); box.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const d = await enpaf.call("diag_info", {});
+    DIAG = d;
+    const gb = (n) => (n ? (n / 1073741824).toFixed(1) + " GB" : "—");
+    const screen = d.screen_width ? `${d.screen_width}×${d.screen_height}${d.density ? " @" + d.density + "x" : ""}` : "—";
+    const rows = {
+      Device: [d.manufacturer, d.model].filter(Boolean).join(" ") || d.model || "—",
+      Android: d.android ? `${d.android} (API ${d.api_level ?? "?"})` : "—",
+      ABI: d.abi || "—",
+      Screen: screen,
+      RAM: d.ram_total ? `${gb(d.ram_avail)} free / ${gb(d.ram_total)}` : "—",
+      Storage: d.storage_total ? `${gb(d.storage_free)} free / ${gb(d.storage_total)}` : "—",
+      WebView: d.webview || "—",
+      "Install perm": d.can_install ? "allowed ✓" : "blocked",
+    };
+    box.innerHTML = Object.entries(rows)
+      .map(([k, v]) => `<div class="kv"><span>${k}</span><b>${escapeHtml(String(v))}</b></div>`).join("");
+  } catch (e) { box.innerHTML = `<div class="empty">Error: ${e.message}</div>`; }
+}
+function copyDiag() {
+  if (!DIAG) return toast("Nothing to copy", true);
+  const lines = Object.entries(DIAG).filter(([k]) => !k.endsWith("_err")).map(([k, v]) => `${k}: ${v}`);
+  enpaf.device.clipboard("ENPAF device report\n" + lines.join("\n"));
+  toast("Report copied");
+}
+
+// Feature 5 — connection tester.
+async function runProbe() {
+  const url = $("probe-url").value.trim() || (current && current.url) || "";
+  if (!url) return toast("Enter a URL", true);
+  const out = $("probe-out"); out.innerHTML = '<div class="empty">Testing…</div>';
+  try {
+    const r = await enpaf.call("probe_url", { url });
+    if (!r.ok) {
+      out.innerHTML = `<div class="kv"><span>Status</span><b class="warn-text">Unreachable</b></div>` +
+        `<div class="kv"><span>Error</span><b>${escapeHtml(r.error || "—")}</b></div>`;
+      return;
+    }
+    const rows = {
+      Status: `${r.status} ✓`, Latency: `${r.ms} ms`,
+      Size: r.length ? formatBytes(r.length) : "—",
+      "Last modified": r.last_modified || "—",
+    };
+    out.innerHTML = Object.entries(rows)
+      .map(([k, v]) => `<div class="kv"><span>${k}</span><b>${escapeHtml(String(v))}</b></div>`).join("");
+  } catch (e) { out.innerHTML = `<div class="empty">Error: ${e.message}</div>`; }
 }
 
 // ═══════════════════════════ SETTINGS ═══════════════════════════
@@ -308,7 +441,7 @@ function initSettings() {
   $("btn-clear-data").onclick = async () => {
     await save("history", []);
     LOG = []; renderLog(); renderHistory();
-    toast("History & cache cleared");
+    toast("History & log cleared");
   };
 }
 async function refreshSettings() {

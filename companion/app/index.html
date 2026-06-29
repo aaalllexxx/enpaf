@@ -38,7 +38,6 @@
     <!-- ───────── Connect (loader) ───────── -->
     <section data-view="connect" class="view active">
 
-      <!-- Shown only when the OS blocks installs from this app -->
       <div id="perm-banner" class="card warn-card hidden">
         <div><b>Installing apps is blocked</b><span class="muted small d-block">Allow ENPAF Companion to install apps so it can load your builds.</span></div>
         <button id="btn-allow-install" class="btn btn-primary full mt">Allow installs</button>
@@ -51,6 +50,9 @@
         <div class="row mt">
           <input id="manual-url" class="input grow" placeholder="http://192.168.0.10:8000/dist/app.apk" inputmode="url">
           <button id="btn-manual" class="btn btn-secondary">Open</button>
+        </div>
+        <div class="row mt">
+          <button id="btn-paste" class="btn btn-ghost grow">📋 Paste URL from clipboard</button>
         </div>
         <div class="kv mt"><span>This device</span><b id="net-self" class="mono small">—</b></div>
       </div>
@@ -77,7 +79,19 @@
           <div id="progress" class="progress hidden"><div id="progress-fill" class="progress-fill"></div></div>
           <div id="progress-text" class="muted small center hidden">0%</div>
         </div>
-        <button id="btn-flow-back" class="btn btn-ghost full mt">← Back</button>
+        <div class="kv-row">
+          <div><b>Auto-reload watch</b><span class="muted small d-block">Alert when this build changes on the server</span></div>
+          <label class="switch"><input type="checkbox" id="watch-toggle"><span class="slider"></span></label>
+        </div>
+        <div class="row mt">
+          <button id="btn-fav-add" class="btn btn-ghost grow">☆ Save to favorites</button>
+          <button id="btn-flow-back" class="btn btn-ghost">← Back</button>
+        </div>
+      </div>
+
+      <div id="fav-card" class="card hidden">
+        <div class="card-head"><h3>Favorites</h3></div>
+        <ul id="favorites" class="list"></ul>
       </div>
 
       <div class="card">
@@ -101,6 +115,30 @@
       </div>
     </section>
 
+    <!-- ───────── Device (diagnostics) ───────── -->
+    <section data-view="device" class="view">
+      <div class="card">
+        <div class="card-head"><h3>Device diagnostics</h3>
+          <div class="row">
+            <button id="btn-diag-refresh" class="btn btn-ghost sm">↻</button>
+            <button id="btn-diag-copy" class="btn btn-ghost sm">Copy</button>
+          </div>
+        </div>
+        <p class="muted small">The runtime your app will face on this phone.</p>
+        <div id="diag-info" class="kv-list"><div class="empty">Loading…</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Connection tester</h3></div>
+        <p class="muted small">Check a build URL is reachable and how fast it responds.</p>
+        <div class="row">
+          <input id="probe-url" class="input grow" placeholder="http://192.168.0.10:8000/dist/app.apk" inputmode="url">
+          <button id="btn-probe" class="btn btn-secondary">Test</button>
+        </div>
+        <div id="probe-out" class="kv-list mt"></div>
+      </div>
+    </section>
+
     <!-- ───────── Settings ───────── -->
     <section data-view="settings" class="view">
       <div class="card">
@@ -119,7 +157,7 @@
       <div class="card">
         <h3>Data</h3>
         <div class="kv-row">
-          <div><b>Recent builds &amp; cache</b><span class="muted small d-block">Clears the loader history and stored state</span></div>
+          <div><b>Recent builds &amp; cache</b><span class="muted small d-block">Clears loader history and the activity log (favorites kept)</span></div>
           <button id="btn-clear-data" class="btn btn-secondary sm">Clear</button>
         </div>
       </div>
@@ -139,6 +177,10 @@
     <button class="tab" data-tab="logs">
       <svg viewBox="0 0 24 24"><line x1="5" y1="7" x2="19" y2="7"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="17" x2="13" y2="17"/></svg>
       <span>Logs</span>
+    </button>
+    <button class="tab" data-tab="device">
+      <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      <span>Device</span>
     </button>
     <button class="tab" data-tab="settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M21 12h-2.5M5.5 12H3M18 6l-1.7 1.7M7.7 16.3 6 18M18 18l-1.7-1.7M7.7 7.7 6 6"/></svg>

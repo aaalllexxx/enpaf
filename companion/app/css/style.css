@@ -174,11 +174,12 @@ code { font-family: var(--mono); font-size: .85em; color: var(--accent);
 .tabbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 25;
   width: 100%; max-width: var(--app-w); height: var(--tabbar-h);
   padding-bottom: env(safe-area-inset-bottom);
-  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  display: flex;
   background: rgba(255,255,255,.95);
   backdrop-filter: blur(18px); box-shadow: 0 -6px 18px rgba(48,78,196,.07);
   border-radius: 22px 22px 0 0; }
 .tab { background: none; border: none; cursor: pointer; color: var(--dim);
+  flex: 1 1 0; min-width: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   font: inherit; font-size: 10.5px; font-weight: 600; transition: color .15s; }
 .tab svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 1.9;
