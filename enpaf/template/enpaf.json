@@ -1,0 +1,21 @@
+{
+    "name": "{{PROJECT_NAME}}",
+    "package": "com.enpaf.app",
+    "version": "1.0.0",
+    "description": "My ENPAF Application",
+    "author": "Developer",
+    "orientation": "portrait",
+    "icon": "",
+    "permissions": [
+        "INTERNET"
+    ],
+    "features": [],
+    "deeplinks": [],
+    "python_requirements": [],
+    "min_sdk": 24,
+    "target_sdk": 34,
+    "theme": {
+        "primary_color": "#6C5CE7",
+        "status_bar_color": "#5A4BD1"
+    }
+}

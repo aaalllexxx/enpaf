@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ENPAF Companion</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Biometric lock overlay -->
+  <div id="lock" class="lock hidden">
+    <div class="lock-card">
+      <div class="lock-logo">◆</div>
+      <h1>ENPAF Companion</h1>
+      <p class="muted">Locked — authenticate to continue</p>
+      <button id="lock-btn" class="btn btn-primary btn-lg">🔓 Unlock</button>
+      <p id="lock-msg" class="muted small"></p>
+    </div>
+  </div>
+
+  <!-- Top app bar -->
+  <header class="appbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <div class="title" id="appbar-title">Companion</div>
+        <div class="sub" id="appbar-sub">Developer tools</div>
+      </div>
+    </div>
+    <span class="conn-chip" id="conn-chip" title="Bridge status"></span>
+  </header>
+
+  <main id="app" class="content">
+
+    <!-- ───────── Connect (loader) ───────── -->
+    <section data-view="connect" class="view active">
+      <div class="card hero">
+        <h2>Run a project</h2>
+        <p class="muted">Scan the QR from <code>paf serve</code>, or paste the APK URL.</p>
+        <button id="btn-scan" class="btn btn-primary btn-lg full">Scan dev-server QR</button>
+        <div class="row mt">
+          <input id="manual-url" class="input grow" placeholder="http://192.168.0.10:8000/dist/app.apk" inputmode="url">
+          <button id="btn-manual" class="btn btn-secondary">Open</button>
+        </div>
+      </div>
+
+      <div id="reader-card" class="card hidden">
+        <div id="reader"></div>
+        <button id="btn-close-scanner" class="btn btn-secondary full mt">Cancel</button>
+      </div>
+
+      <!-- Connect / install flow -->
+      <div id="flow-card" class="card hidden">
+        <div class="step">
+          <div class="step-head"><span class="step-ic">📡</span><div><b>Network</b><span class="muted small d-block">Be on the dev machine's Wi-Fi</span></div></div>
+          <div class="kv"><span>Wi-Fi</span><b id="flow-ssid">—</b></div>
+          <div class="kv"><span>URL</span><b id="flow-url" class="mono small">—</b></div>
+          <div id="flow-status" class="status-line warn">Waiting for server…</div>
+          <div class="row">
+            <button id="btn-wifi-connect" class="btn btn-secondary grow">Connect Wi-Fi</button>
+            <button id="btn-wifi-settings" class="btn btn-ghost">Settings</button>
+          </div>
+        </div>
+        <div class="step">
+          <button id="btn-install" class="btn btn-success btn-lg full">Download &amp; Install</button>
+          <div id="progress" class="progress hidden"><div id="progress-fill" class="progress-fill"></div></div>
+          <div id="progress-text" class="muted small center hidden">0%</div>
+        </div>
+        <button id="btn-flow-back" class="btn btn-ghost full mt">← Back</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Recent projects</h3><button id="btn-clear-history" class="btn btn-ghost sm">Clear</button></div>
+        <ul id="history" class="list"><li class="empty">No projects yet.</li></ul>
+      </div>
+    </section>
+
+    <!-- ───────── Device ───────── -->
+    <section data-view="device" class="view">
+      <div class="card">
+        <div class="card-head"><h3>Device</h3><button id="btn-device-refresh" class="btn btn-ghost sm">↻ Refresh</button></div>
+        <div id="device-info" class="kv-list"><div class="empty">Loading…</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Storage &amp; Memory</h3></div>
+        <div class="kv-list">
+          <div class="kv"><span>RAM</span><b>— / —</b></div>
+          <div class="kv"><span>Storage</span><b>— / —</b></div>
+        </div>
+        <div class="progress mt"><div class="progress-fill" style="width: 45%;"></div></div>
+        <div class="muted small center mt">Metrics refresh automatically</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Live sensors</h3>
+          <label class="switch"><input type="checkbox" id="sensors-toggle"><span class="slider"></span></label>
+        </div>
+        <div id="sensor-grid" class="sensor-grid"></div>
+      </div>
+    </section>
+
+    <!-- ───────── Tools ───────── -->
+    <section data-view="tools" class="view">
+      <div class="card">
+        <div class="card-head"><h3>Wi-Fi</h3><button id="btn-wifi-scan" class="btn btn-secondary sm">Scan</button></div>
+        <ul id="wifi-list" class="list"><li class="empty">Tap Scan.</li></ul>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Bluetooth</h3><button id="btn-bt-scan" class="btn btn-secondary sm">Scan</button></div>
+        <ul id="bt-list" class="list"><li class="empty">Tap Scan.</li></ul>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>NFC</h3><button id="btn-nfc-read" class="btn btn-secondary sm">Read tag</button></div>
+        <div id="nfc-out" class="muted small">Tap “Read tag”, then hold an NFC tag to the phone.</div>
+      </div>
+      <div class="card">
+        <h3>Quick actions</h3>
+        <div class="chip-row">
+          <button class="btn btn-secondary sm" data-act="vibrate">Vibrate</button>
+          <button class="btn btn-secondary sm" data-act="toast">Toast</button>
+          <button class="btn btn-secondary sm" data-act="notify">Notify</button>
+          <button class="btn btn-secondary sm" data-act="clip-copy">Copy</button>
+          <button class="btn btn-secondary sm" data-act="clip-read">Paste</button>
+          <button class="btn btn-secondary sm" data-act="share">Share</button>
+          <button class="btn btn-secondary sm" data-act="location">Location</button>
+          <button class="btn btn-secondary sm" data-act="biometric">Biometric</button>
+        </div>
+        <div id="action-out" class="muted small mt"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Permissions</h3><button id="btn-perm-refresh" class="btn btn-ghost sm">↻</button></div>
+        <ul id="perm-list" class="list"><li class="empty">Loading…</li></ul>
+      </div>
+    </section>
+
+    <!-- ───────── Settings ───────── -->
+    <section data-view="settings" class="view">
+      <div class="card">
+        <h3>Security</h3>
+        <div class="kv-row">
+          <div><b>Biometric lock</b><span class="muted small d-block">Require fingerprint / face on launch</span></div>
+          <label class="switch"><input type="checkbox" id="bio-toggle"><span class="slider"></span></label>
+        </div>
+        <div class="muted small mt" id="bio-state"></div>
+      </div>
+      <div class="card">
+        <h3>Developer Options</h3>
+        <div class="kv-row mt">
+          <div><b>Verbose logging</b><span class="muted small d-block">Show detailed connection logs</span></div>
+          <label class="switch"><input type="checkbox" id="log-toggle"><span class="slider"></span></label>
+        </div>
+        <div class="kv-row mt">
+          <div><b>Mock sensors</b><span class="muted small d-block">Simulate data when unavailable</span></div>
+          <label class="switch"><input type="checkbox" id="mock-toggle"><span class="slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3>About</h3>
+        <div id="about-info" class="kv-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom navigation -->
+  <nav class="tabbar">
+    <button class="tab active" data-tab="connect">
+      <svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><line x1="4" y1="12" x2="20" y2="12"/></svg>
+      <span>Connect</span>
+    </button>
+    <button class="tab" data-tab="device">
+      <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      <span>Device</span>
+    </button>
+    <button class="tab" data-tab="tools">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="9" cy="8" r="2.4"/><circle cx="15" cy="16" r="2.4"/></svg>
+      <span>Tools</span>
+    </button>
+    <button class="tab" data-tab="settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M21 12h-2.5M5.5 12H3M18 6l-1.7 1.7M7.7 16.3 6 18M18 18l-1.7-1.7M7.7 7.7 6 6"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <div id="toast" class="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

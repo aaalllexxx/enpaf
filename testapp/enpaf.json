@@ -1,0 +1,67 @@
+{
+    "name": "testapp",
+    "package": "com.enpaf.testapp",
+    "version": "1.0.1",
+    "description": "My ENPAF Application",
+    "author": "Developer",
+    "orientation": "portrait",
+    "icon": "icon.jpg",
+    "permissions": [
+        "INTERNET",
+        "CAMERA",
+        "VIBRATE",
+        "POST_NOTIFICATIONS",
+        "NFC",
+        "FINE_LOCATION",
+        "RECORD_AUDIO",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "ACCESS_WIFI_STATE",
+        "ACCESS_NETWORK_STATE"
+    ],
+    "features": [
+        {
+            "key": "NFC",
+            "required": false
+        },
+        {
+            "key": "GYROSCOPE",
+            "required": false
+        },
+        {
+            "key": "ACCELEROMETER",
+            "required": false
+        },
+        {
+            "key": "CAMERA_FRONT",
+            "required": false
+        },
+        {
+            "key": "CAMERA",
+            "required": false
+        },
+        {
+            "key": "CAMERA_AUTOFOCUS",
+            "required": false
+        }
+    ],
+    "deeplinks": [
+        {
+            "label": "Open App",
+            "scheme": "enpaf",
+            "host": "",
+            "path": "testopen",
+            "pathType": "path",
+            "autoVerify": true
+        }
+    ],
+    "python_requirements": [],
+    "min_sdk": 24,
+    "target_sdk": 34,
+    "theme": {
+        "primary_color": "#000000",
+        "status_bar_color": "#000000"
+    }
+}

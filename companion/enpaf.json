@@ -1,0 +1,61 @@
+{
+    "name": "ENPAF Companion",
+    "package": "com.enpaf.companion",
+    "version": "1.0.13",
+    "description": "Companion app for debugging ENPAF projects",
+    "author": "PAF",
+    "orientation": "portrait",
+    "min_sdk": 26,
+    "target_sdk": 34,
+    "python_version": "3.11",
+    "python_requirements": [],
+    "permissions": [
+        "INTERNET",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "VIBRATE",
+        "NFC",
+        "FINE_LOCATION",
+        "COARSE_LOCATION",
+        "ACCESS_WIFI_STATE",
+        "ACCESS_NETWORK_STATE",
+        "CHANGE_WIFI_STATE",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "POST_NOTIFICATIONS",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "REQUEST_INSTALL_PACKAGES"
+    ],
+    "build_config": {
+        "minify": false,
+        "shrink_resources": false
+    },
+    "icon": "icon.png",
+    "theme": {
+        "primary_color": "#3E63DD",
+        "status_bar_color": "#EAF0FB"
+    },
+    "features": [
+        {
+            "key": "CAMERA",
+            "required": false
+        },
+        {
+            "key": "CAMERA_FRONT",
+            "required": false
+        }
+    ],
+    "deeplinks": [
+        {
+            "label": "enpaf",
+            "scheme": "enpaf",
+            "host": "debug",
+            "path": "",
+            "pathType": "path",
+            "autoVerify": false
+        }
+    ]
+}

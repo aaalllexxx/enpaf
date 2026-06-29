@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Build / distribution
+build/
+dist/
+*.whl
+*.tar.gz
+
+# ENPAF build output
+.enpaf_build/
+
+# Project runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets
+.pypirc

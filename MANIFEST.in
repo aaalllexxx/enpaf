@@ -1,0 +1,19 @@
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+
+# Project template shipped with the package (used by `paf create`)
+recursive-include enpaf/template *
+
+# Client-side JS bridge served in dev and copied into the APK
+recursive-include enpaf_bridge *.js
+
+# Keep build artifacts / examples out of the distribution
+prune testapp
+prune dist
+prune build
+prune .enpaf_build
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so

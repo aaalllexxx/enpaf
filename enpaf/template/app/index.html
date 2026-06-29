@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ENPAF App</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ─── Navigation ─────────────────────────────────── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <span class="nav-logo">◆</span>
+            <span class="nav-title">ENPAF App</span>
+        </div>
+        <button class="nav-menu-btn" id="menuBtn" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- ─── Hero Section ──────────────────────────────── -->
+    <section class="hero" id="hero">
+        <div class="hero-bg-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge" id="connectionBadge">
+                <span class="badge-dot"></span>
+                <span id="connectionText">Connecting...</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="gradient-text">Hello from</span><br>
+                <span class="hero-highlight">Python + Web</span>
+            </h1>
+            <p class="hero-subtitle">
+                Это приложение работает на ENPAF Framework.<br>
+                Python — логика. HTML/CSS/JS — интерфейс.
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="callPython()">
+                    <span class="btn-icon">🐍</span> Вызвать Python
+                </button>
+                <button class="btn btn-secondary" onclick="showTime()">
+                    <span class="btn-icon">⏰</span> Время
+                </button>
+            </div>
+            <div class="hero-result" id="heroResult"></div>
+        </div>
+    </section>
+
+    <!-- ─── Features Cards ────────────────────────────── -->
+    <section class="section" id="features">
+        <h2 class="section-title">Возможности</h2>
+        <div class="cards-grid">
+            <div class="card card-bridge" onclick="demosBridge()">
+                <div class="card-icon">🔗</div>
+                <h3>Python ↔ JS Bridge</h3>
+                <p>Вызывайте Python-функции из JavaScript и наоборот</p>
+            </div>
+            <div class="card card-storage" onclick="demosStorage()">
+                <div class="card-icon">💾</div>
+                <h3>Storage API</h3>
+                <p>Сохраняйте данные в локальную базу SQLite</p>
+            </div>
+            <div class="card card-events" onclick="demosEvents()">
+                <div class="card-icon">⚡</div>
+                <h3>Events</h3>
+                <p>Система событий для связи компонентов</p>
+            </div>
+            <div class="card card-device" onclick="demosDevice()">
+                <div class="card-icon">📱</div>
+                <h3>Device API</h3>
+                <p>Toast, вибрация, поделиться и другое</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Notes Demo ────────────────────────────────── -->
+    <section class="section" id="notesSection">
+        <h2 class="section-title">📝 Заметки <span class="title-badge">Python Storage</span></h2>
+        <div class="notes-container">
+            <div class="notes-input-group">
+                <input type="text" id="noteInput" class="input" placeholder="Введите заметку..." 
+                       onkeypress="if(event.key==='Enter')addNote()">
+                <button class="btn btn-primary btn-sm" onclick="addNote()">Добавить</button>
+            </div>
+            <div class="notes-list" id="notesList">
+                <div class="empty-state">
+                    <span class="empty-icon">📋</span>
+                    <p>Нет заметок. Добавьте первую!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Calculator Demo ───────────────────────────── -->
+    <section class="section" id="calcSection">
+        <h2 class="section-title">🧮 Калькулятор <span class="title-badge">Python Backend</span></h2>
+        <div class="calc-container">
+            <div class="calc-row">
+                <input type="number" id="calcA" class="input calc-input" placeholder="A" value="42">
+                <select id="calcOp" class="input calc-op">
+                    <option value="+">+</option>
+                    <option value="-">−</option>
+                    <option value="*">×</option>
+                    <option value="/">÷</option>
+                </select>
+                <input type="number" id="calcB" class="input calc-input" placeholder="B" value="13">
+                <button class="btn btn-primary btn-sm" onclick="calculate()">=</button>
+            </div>
+            <div class="calc-result" id="calcResult"></div>
+        </div>
+    </section>
+
+    <!-- ─── Footer ────────────────────────────────────── -->
+    <footer class="footer">
+        <p>Built with <span class="heart">♥</span> using <strong>ENPAF Framework</strong></p>
+        <p class="footer-version">v1.0.0 · Python + HTML/CSS/JS → Android APK</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
