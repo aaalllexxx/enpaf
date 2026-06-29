@@ -8,7 +8,6 @@ import sys
 import json
 import socket
 import subprocess
-import time
 import secrets
 from urllib.parse import urlencode
 
@@ -71,7 +70,7 @@ def get_windows_ssid():
 
     try:
         output = subprocess.check_output(
-            ["netsh", "wlan", "show", "interfaces"], 
+            ["netsh", "wlan", "show", "interfaces"],
             creationflags=subprocess.CREATE_NO_WINDOW,
             text=True
         )
@@ -113,30 +112,30 @@ def cmd_serve(args):
     ip = get_local_ip()
     port = args.port
     ssid = get_windows_ssid()
-    
+
     # Generate API token for secure download
     token = secrets.token_urlsafe(16)
 
     url = f"http://{ip}:{port}/dist/{apk_filename}"
-    
+
     qr_data = {
         "url": url,
         "token": token
     }
     if ssid:
         qr_data["ssid"] = ssid
-        
+
     # Create an enpaf debug URI
     qr_uri = f"enpaf://debug?{urlencode(qr_data)}"
 
     ui.header("Scan to Debug")
     ui.newline()
-    
+
     qr = qrcode.QRCode(version=1, box_size=1, border=2)
     qr.add_data(qr_uri)
     qr.make(fit=True)
     qr.print_ascii(out=sys.stdout, tty=False)
-    
+
     ui.newline()
     if ssid:
         ui.info(f"Wi-Fi: {ssid}")
@@ -144,11 +143,11 @@ def cmd_serve(args):
     ui.newline()
     ui.dim(f"Starting local server on port {port}...")
     ui.dim("Press Ctrl+C to stop.")
-    
+
     # Use standard library http.server to serve the current directory
     import http.server
     import socketserver
-    
+
     class CustomHandler(http.server.SimpleHTTPRequestHandler):
         def log_message(self, format, *args):
             ui.dim(f"{self.client_address[0]} - {format%args}")

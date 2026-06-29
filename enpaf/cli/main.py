@@ -4,7 +4,6 @@ The 'paf' command-line tool for managing ENPAF projects.
 """
 
 import argparse
-import sys
 import os
 
 from enpaf.cli import ui

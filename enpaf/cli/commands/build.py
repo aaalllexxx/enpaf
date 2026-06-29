@@ -9,11 +9,7 @@ import json
 import os
 import shutil
 import subprocess
-import sys
-import time
 import platform
-import urllib.request
-import zipfile
 from typing import Optional
 
 from enpaf.cli import ui
@@ -131,15 +127,15 @@ def cmd_build(args):
             # Copy to dist/
             dist_dir = os.path.join(os.getcwd(), "dist")
             os.makedirs(dist_dir, exist_ok=True)
-            
+
             apk_name = f"{config.get('name', 'app').replace(' ', '_').lower()}-{config.get('version', '1.0.0')}.apk"
             final_path = os.path.join(dist_dir, apk_name)
             shutil.copy2(apk_path, final_path)
-            
+
             size_mb = os.path.getsize(final_path) / (1024 * 1024)
 
             ui.newline()
-            ui.success(f"APK built successfully! 🎉")
+            ui.success("APK built successfully! 🎉")
             ui.newline()
             ui.info(f"Output: {final_path}")
             ui.info(f"Size: {size_mb:.1f} MB")
@@ -230,7 +226,7 @@ def _check_build_env() -> bool:
         os.environ.get("ANDROID_HOME")
         or os.environ.get("ANDROID_SDK_ROOT")
     )
-    
+
     if not android_home:
         # Check common locations
         common = _find_android_sdk()
@@ -337,7 +333,7 @@ def _find_compatible_jdk() -> Optional[str]:
 def _find_android_sdk() -> Optional[str]:
     """Try to find Android SDK in common locations."""
     candidates = []
-    
+
     if platform.system() == "Windows":
         candidates = [
             os.path.expandvars(r"%LOCALAPPDATA%\Android\Sdk"),
@@ -353,9 +349,9 @@ def _find_android_sdk() -> Optional[str]:
             os.path.expanduser("~/Android/Sdk"),
             "/usr/local/android-sdk",
         ]
-    
+
     for path in candidates:
         if os.path.isdir(path):
             return path
-    
+
     return None

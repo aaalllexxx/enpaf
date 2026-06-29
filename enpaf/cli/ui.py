@@ -4,11 +4,10 @@ Beautiful console output with colors, progress bars, and ASCII art.
 """
 
 import io
-import os
 import sys
 import time
 import threading
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 # Force UTF-8 output on Windows
 if sys.platform == "win32":

@@ -3,7 +3,6 @@ ENPAF Builder — Android Project Generator
 Generates all files for the Gradle/Chaquopy Android project.
 """
 
-import json
 import os
 import shutil
 import stat
@@ -12,7 +11,6 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from typing import List
 from xml.sax.saxutils import escape
 
 from enpaf.android.permissions import get_permission_xml
@@ -308,21 +306,21 @@ class ProjectGenerator:
                 '__version__="1.0.0"\nfrom enpaf.core.app import EnpafApp\n')
 
     def _write_settings_gradle(self):
-        self._w("settings.gradle", f'''pluginManagement {{
-    repositories {{
+        self._w("settings.gradle", '''pluginManagement {
+    repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven {{ url "https://chaquo.com/maven" }}
-    }}
-}}
-dependencyResolutionManagement {{
+        maven { url "https://chaquo.com/maven" }
+    }
+}
+dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {{
+    repositories {
         google()
         mavenCentral()
-    }}
-}}
+    }
+}
 rootProject.name = "enpaf-app"
 include ':app'
 ''')

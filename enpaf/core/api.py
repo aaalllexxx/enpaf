@@ -4,9 +4,8 @@ Built-in APIs for device features (notifications, vibration, etc.).
 In dev mode, these are stubs that log to console.
 """
 
-import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 logger = logging.getLogger("enpaf.api")
 
@@ -263,11 +262,11 @@ class DeviceAPI:
                 if payload or action:
                     content_intent.putExtra("enpaf_action", action)
                     content_intent.putExtra("enpaf_payload", payload)
-                
+
                 pi_flags = PendingIntent.FLAG_UPDATE_CURRENT
                 if Build.VERSION.SDK_INT >= 23: # M
                     pi_flags |= PendingIntent.FLAG_IMMUTABLE
-                
+
                 pi = PendingIntent.getActivity(context, notification_id, content_intent, pi_flags)
                 builder.setContentIntent(pi)
 
@@ -373,13 +372,13 @@ class DeviceAPI:
                 from java.lang import Runnable
 
                 context = Python.getPlatform().getApplication()
-                
+
                 class ClipRunnable(Runnable):
                     def run(self):
                         cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
                         if cm:
                             cm.setPrimaryClip(ClipData.newPlainText("enpaf", text))
-                            
+
                 handler = Handler(Looper.getMainLooper())
                 handler.post(ClipRunnable())
             except Exception as e:

@@ -4,13 +4,10 @@ Generates a Gradle-based Android project and builds APK using Chaquopy.
 Works natively on Windows.
 """
 
-import json
 import os
 import platform
 import shutil
 import subprocess
-import stat
-import urllib.request
 from typing import Optional
 
 from enpaf.cli import ui

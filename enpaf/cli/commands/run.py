@@ -31,11 +31,10 @@ def cmd_run(args):
         ui.dim("Every ENPAF project needs a main.py file")
         return
 
-    # Load config
+    # Validate enpaf.json is present and parseable before launching.
     with open(config_path, "r", encoding="utf-8") as f:
-        config = json.load(f)
+        json.load(f)
 
-    app_name = config.get("name", "ENPAF App")
     host = args.host
     port = args.port
     open_browser = not args.no_browser
@@ -51,11 +50,11 @@ def cmd_run(args):
         # Import and execute main.py
         # We need to exec it so that the app.run() call at the bottom works
         # But we want to intercept the run() call to use our CLI args
-        
+
         import importlib.util
         spec = importlib.util.spec_from_file_location("__main__", main_py)
         module = importlib.util.module_from_spec(spec)
-        
+
         # Patch sys.argv so the module thinks it's the main script
         old_argv = sys.argv
         sys.argv = [main_py]

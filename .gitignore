@@ -4,6 +4,14 @@ __pycache__/
 *.egg-info/
 .eggs/
 
+# Test / lint caches & coverage
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
 # Build / distribution
 build/
 dist/

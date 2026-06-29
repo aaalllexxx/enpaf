@@ -3,6 +3,9 @@ include LICENSE
 include requirements.txt
 include pyproject.toml
 
+# Tests shipped in the sdist so they can run from the unpacked package
+recursive-include tests *.py
+
 # Project template shipped with the package (used by `paf create`)
 recursive-include enpaf/template *
 

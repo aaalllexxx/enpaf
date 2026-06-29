@@ -7,7 +7,6 @@ import json
 import os
 import shutil
 import re
-from typing import Optional
 
 from enpaf.cli import ui
 
@@ -19,7 +18,7 @@ def cmd_create(args):
     ui.newline()
 
     project_name = args.name
-    
+
     # Validate project name
     if not re.match(r'^[a-zA-Z][a-zA-Z0-9_-]*$', project_name):
         ui.error("Invalid project name. Use letters, numbers, hyphens, and underscores.")
@@ -28,7 +27,7 @@ def cmd_create(args):
 
     # Project directory
     project_dir = os.path.join(os.getcwd(), project_name)
-    
+
     if os.path.exists(project_dir):
         ui.error(f"Directory '{project_name}' already exists!")
         return
@@ -76,7 +75,7 @@ def cmd_create(args):
 
 def _create_project(project_dir: str, name: str, package: str):
     """Create the project directory structure from template."""
-    
+
     # Find template directory (from enpaf/cli/commands/create.py -> enpaf/template/)
     enpaf_pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     template_dir = os.path.join(enpaf_pkg_dir, "template")
@@ -93,10 +92,10 @@ def _create_project(project_dir: str, name: str, package: str):
     if os.path.isfile(config_path):
         with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
-        
+
         config["name"] = name
         config["package"] = package
-        
+
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
 

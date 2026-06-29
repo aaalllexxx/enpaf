@@ -5,13 +5,15 @@ Page routing system with template rendering support.
 
 from __future__ import annotations  # keep type hints lazy (jinja2 is optional)
 
-import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
 # NOTE: jinja2 is imported lazily inside _get_jinja_env(). On Android (Chaquopy)
 # it is not bundled unless the app needs it, and templates are not rendered there
 # (the WebView loads static assets directly). A top-level import would crash the
-# app on launch with ModuleNotFoundError.
+# app on launch with ModuleNotFoundError. The TYPE_CHECKING import below is for
+# type checkers/linters only and is never executed at runtime.
+if TYPE_CHECKING:
+    from jinja2 import Environment
 
 
 class Route:
@@ -94,17 +96,17 @@ class Router:
         """
         env = self._get_jinja_env()
         template = env.get_template(template_name)
-        
+
         # Add framework context
         context.setdefault("enpaf_version", "1.0.0")
-        
+
         rendered = template.render(**context)
-        
+
         # Inject bridge script if not already present
         if "enpaf.js" not in rendered and "</head>" in rendered:
             bridge_inject = '<script src="/enpaf-bridge/enpaf.js"></script>\n</head>'
             rendered = rendered.replace("</head>", bridge_inject)
-        
+
         return rendered
 
     def render_string(self, template_string: str, **context) -> str:

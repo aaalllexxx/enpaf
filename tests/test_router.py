@@ -1,6 +1,5 @@
 """Tests for enpaf.core.router — routing + Jinja2 template rendering."""
 
-import pytest
 
 from enpaf.core.router import Route, Router
 

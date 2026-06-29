@@ -69,14 +69,14 @@ def cmd_doctor(args):
 
     # ─── Watchdog ─────────────────────────────────────────
     try:
-        import watchdog
-        ui.success(f"Watchdog (hot-reload support)")
+        import watchdog  # noqa: F401  (availability probe)
+        ui.success("Watchdog (hot-reload support)")
     except ImportError:
         ui.warning("Watchdog not installed — hot-reload disabled. Install: pip install watchdog")
 
     # ─── Colorama ─────────────────────────────────────────
     try:
-        import colorama
+        import colorama  # noqa: F401  (availability probe)
         ui.success("Colorama (terminal colors)")
     except ImportError:
         ui.warning("Colorama not installed — colors may not work on Windows")

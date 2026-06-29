@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["android", "apk", "python", "webview", "framework", "mobile"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: Free for non-commercial use",
     "License :: Other/Proprietary License",
@@ -45,8 +45,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["build>=1.0.0", "twine>=5.0.0"]
-test = ["pytest>=7.0.0"]
+dev = ["build>=1.0.0", "twine>=5.0.0", "ruff>=0.6.0"]
+test = ["pytest>=7.0.0", "pytest-cov>=4.0.0"]
 
 [project.scripts]
 paf = "enpaf.cli.main:main"
@@ -76,3 +76,13 @@ enpaf_bridge = ["*.js"]
 minversion = "7.0"
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+# Pyflakes: unused imports, undefined names, unused variables, bad f-strings.
+# (pycodestyle E/W is intentionally off — the embedded Gradle/Java templates
+# would trip whitespace rules inside string literals.)
+select = ["F"]

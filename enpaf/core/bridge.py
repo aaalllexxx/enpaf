@@ -8,8 +8,7 @@ On Android: uses JavaScriptInterface callbacks.
 import json
 import logging
 import threading
-import uuid
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 logger = logging.getLogger("enpaf.bridge")
 

@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 from enpaf.core.bridge import Bridge
 from enpaf.core.events import EventEmitter

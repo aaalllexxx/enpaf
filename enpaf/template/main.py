@@ -45,7 +45,7 @@ def save_note(params):
     text = params.get("text", "")
     if not text:
         return {"success": False, "error": "Empty note"}
-    
+
     notes = app.storage.collection("notes")
     note_id = notes.add({"text": text})
     return {"success": True, "id": note_id}
@@ -73,14 +73,14 @@ def calculate(params):
     a = params.get("a", 0)
     b = params.get("b", 0)
     op = params.get("op", "+")
-    
+
     operations = {
         "+": lambda x, y: x + y,
         "-": lambda x, y: x - y,
         "*": lambda x, y: x * y,
         "/": lambda x, y: x / y if y != 0 else "∞",
     }
-    
+
     func = operations.get(op, operations["+"])
     result = func(float(a), float(b))
     return {"result": result, "expression": f"{a} {op} {b} = {result}"}

@@ -6,9 +6,6 @@ This module runs inside the APK via Chaquopy's embedded Python.
 
 import json
 import logging
-import os
-import sys
-import threading
 from typing import Any
 
 logger = logging.getLogger("enpaf.android.runtime")

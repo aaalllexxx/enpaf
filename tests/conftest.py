@@ -7,7 +7,6 @@ level, since it cannot be imported off-device.
 """
 
 import json
-import os
 
 import pytest
 

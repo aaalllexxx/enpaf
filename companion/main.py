@@ -4,7 +4,6 @@ The "loader": downloads a dev-built APK over the local network and installs it
 silently via the PackageInstaller API (no browser, no file picker).
 """
 
-import os
 import threading
 import urllib.request
 

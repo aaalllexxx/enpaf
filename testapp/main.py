@@ -3,7 +3,6 @@ testapp — ENPAF Application
 """
 
 from enpaf import EnpafApp
-from enpaf.core.api import DeviceAPI
 
 app = EnpafApp(__name__)
 
