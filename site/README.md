@@ -4,7 +4,8 @@ A modern, single-page marketing + documentation site for ENPAF, styled after the
 Companion app (blue → pink on deep navy, glassmorphism, animated). It links out
 to the GitHub repo, Wiki, PyPI and Releases.
 
-It's a fully static site (HTML/CSS/JS, no build step) served by **nginx on port 5000**.
+It's a fully static site (HTML/CSS/JS, no build step) served by **Python's
+standard-library `http.server` on port 5000** — no nginx, no extra packages.
 
 ```
 site/
@@ -12,10 +13,9 @@ site/
 ├── assets/
 │   ├── style.css       # theme + animations
 │   ├── app.js          # logo injection, scroll-reveal, copy buttons
-│   ├── favicon.svg     # gear → C → O mark
+│   ├── favicon.svg     # ENPAF "E ▶" mark (transparent)
 │   └── og.png          # social preview image
-├── Dockerfile          # nginx:alpine, listens on :5000
-├── nginx.conf
+├── Dockerfile          # python:3.12-alpine, http.server on :5000
 └── docker-compose.yml
 ```
 
@@ -54,7 +54,8 @@ python -m http.server 5000
 
 - No external runtime dependencies — fonts load from Google Fonts (with a system
   fallback), everything else is local, so it works offline too.
-- The logo is an inline SVG (gear → C → O) generated in `app.js`; the gear slowly
-  rotates. Animations respect `prefers-reduced-motion`.
-- Edit copy/links directly in `index.html`; the version badge is in the hero
-  (`v1.1.1`).
+- Logos are inline SVG generated in `app.js`: the brand mark is an **"E ▶"** badge
+  (E = ENPAF, the arrow = "Python + Web → APK"); the phone mockup shows the
+  **Companion** mark (concentric ring → C → O). Animations respect
+  `prefers-reduced-motion`.
+- Edit copy/links directly in `index.html`; the version badge is in the hero.

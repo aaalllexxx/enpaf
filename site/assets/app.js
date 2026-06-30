@@ -10,33 +10,36 @@
       `<stop offset="1" stop-color="#ff6ad5"/></linearGradient>`;
   }
 
-  // ── ENPAF brand mark: an 'E' monogram (E = ENPAF) in the gradient ──
+  // ── ENPAF brand mark: an isometric gradient cube — a packaged build (your
+  //    Python + Web app, shipped as an APK). Abstract & geometric. ──
   function makeBrandLogo() {
     const id = "lg" + _uid++;
-    const d = "M 60 56 Q 60 42 74 42 L 132 42 Q 146 42 146 56 L 146 58 Q 146 72 132 72 " +
-      "L 90 72 L 90 85 L 112 85 Q 126 85 126 99 L 126 101 Q 126 115 112 115 L 90 115 " +
-      "L 90 132 L 132 132 Q 146 132 146 146 L 146 148 Q 146 162 132 162 L 74 162 Q 60 162 60 148 Z";
+    // vertices (cx 100, cy 102, R 66)
+    const top = "100,36", tr = "157.2,69", br = "157.2,135",
+      bot = "100,168", bl = "42.8,135", tl = "42.8,69", M = "100,102";
     return `
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
   <defs>${grad(id)}</defs>
-  <path fill="url(#${id})" d="${d}"/>
+  <g stroke="url(#${id})" stroke-width="2" stroke-linejoin="round">
+    <polygon points="${top} ${tr} ${M} ${tl}" fill="url(#${id})"/>
+    <polygon points="${tl} ${M} ${bot} ${bl}" fill="url(#${id})"/>
+    <polygon points="${tr} ${br} ${bot} ${M}" fill="url(#${id})"/>
+  </g>
+  <polygon points="${top} ${tr} ${M} ${tl}" fill="#ffffff" opacity=".22"/>
+  <polygon points="${tr} ${br} ${bot} ${M}" fill="#0a0e27" opacity=".34"/>
 </svg>`;
   }
 
-  // ── Companion mark: gear → C → O (the Companion's app icon); gear spins ──
-  function makeGearLogo() {
+  // ── Companion mark: three evenly-spaced concentric strokes — ring, C, O ──
+  function makeCompanionLogo() {
     const id = "lg" + _uid++;
-    let teeth = "";
-    for (let i = 0; i < 8; i++) {
-      teeth += `<line x1="100" y1="40" x2="100" y2="22" transform="rotate(${i * 45} 100 100)"/>`;
-    }
     return `
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
   <defs>${grad(id)}</defs>
-  <g fill="none" stroke="url(#${id})" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
-    <g class="gear-spin"><circle cx="100" cy="100" r="58"/>${teeth}</g>
-    <path d="M122.8 74.7 A34 34 0 1 0 122.8 125.3"/>
-    <circle cx="100" cy="100" r="13" stroke-width="9"/>
+  <g fill="none" stroke="url(#${id})" stroke-width="13">
+    <circle cx="100" cy="100" r="78"/>
+    <path d="M135.6 65.3 A50 50 0 1 0 135.6 134.7"/>
+    <circle cx="100" cy="100" r="22"/>
   </g>
 </svg>`;
   }
@@ -46,7 +49,7 @@
     if (el) el.innerHTML = makeBrandLogo();
   });
   const phoneLogoEl = document.getElementById("phoneLogo");
-  if (phoneLogoEl) phoneLogoEl.innerHTML = makeGearLogo();
+  if (phoneLogoEl) phoneLogoEl.innerHTML = makeCompanionLogo();
 
   // ── Sticky nav condense on scroll ──
   const nav = document.getElementById("nav");

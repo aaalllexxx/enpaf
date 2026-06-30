@@ -6,6 +6,12 @@
       <stop offset="1" stop-color="#ff6ad5"/>
     </linearGradient>
   </defs>
-  <rect width="200" height="200" rx="46" fill="#0a0e27"/>
-  <path fill="url(#fav)" d="M 60 56 Q 60 42 74 42 L 132 42 Q 146 42 146 56 L 146 58 Q 146 72 132 72 L 90 72 L 90 85 L 112 85 Q 126 85 126 99 L 126 101 Q 126 115 112 115 L 90 115 L 90 132 L 132 132 Q 146 132 146 146 L 146 148 Q 146 162 132 162 L 74 162 Q 60 162 60 148 Z"/>
+  <!-- Isometric ENPAF cube (transparent background) -->
+  <g stroke="url(#fav)" stroke-width="2" stroke-linejoin="round">
+    <polygon points="100,36 157.2,69 100,102 42.8,69" fill="url(#fav)"/>
+    <polygon points="42.8,69 100,102 100,168 42.8,135" fill="url(#fav)"/>
+    <polygon points="157.2,69 157.2,135 100,168 100,102" fill="url(#fav)"/>
+  </g>
+  <polygon points="100,36 157.2,69 100,102 42.8,69" fill="#ffffff" opacity=".22"/>
+  <polygon points="157.2,69 157.2,135 100,168 100,102" fill="#0a0e27" opacity=".34"/>
 </svg>

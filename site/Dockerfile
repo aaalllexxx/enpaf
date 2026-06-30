@@ -1,15 +1,14 @@
-# ENPAF product site — static page served by nginx on port 5000.
-FROM nginx:1.27-alpine
+# ENPAF product site — static page served by Python's stdlib http.server on :5000.
+# No nginx, no third-party packages.
+FROM python:3.12-alpine
 
-# Replace the default server with our :5000 config.
-RUN rm -f /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/enpaf.conf
+WORKDIR /site
 
-# Copy only the site itself (not the Docker/compose files).
-COPY index.html /usr/share/nginx/html/index.html
-COPY assets/    /usr/share/nginx/html/assets/
+# Copy only the site itself (not the Docker/compose/readme files).
+COPY index.html ./index.html
+COPY assets/    ./assets/
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:5000/ >/dev/null 2>&1 || exit 1
+# http.server binds 0.0.0.0 and serves the working directory.
+CMD ["python", "-m", "http.server", "5000", "--bind", "0.0.0.0"]
