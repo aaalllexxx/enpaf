@@ -5,6 +5,7 @@ The 'paf' command-line tool for managing ENPAF projects.
 
 import argparse
 import os
+import sys
 
 from enpaf.cli import ui
 
@@ -24,6 +25,7 @@ Examples:
   paf build apk             Build Android APK
   paf doctor                Check your environment
   paf info                  Show project info
+  paf update                Update PAF to the latest version
         """,
     )
 
@@ -59,6 +61,10 @@ Examples:
     # ─── info ─────────────────────────────────────────────
     subparsers.add_parser("info", help="Show current project info")
 
+    # ─── update ───────────────────────────────────────────
+    update_parser = subparsers.add_parser("update", help="Update PAF to the latest version")
+    update_parser.add_argument("--pre", action="store_true", help="Include pre-release versions")
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -75,6 +81,7 @@ Examples:
                 ["build apk", "Build Android APK"],
                 ["doctor", "Check your environment"],
                 ["info", "Show project info"],
+                ["update", "Update PAF to the latest version"],
             ],
         )
         ui.newline()
@@ -105,6 +112,8 @@ Examples:
         cmd_doctor(args)
     elif args.command == "info":
         cmd_info(args)
+    elif args.command == "update":
+        cmd_update(args)
 
 
 def cmd_info(args):
@@ -148,6 +157,53 @@ def cmd_info(args):
         ui.info(f"Python deps: {', '.join(py_reqs)}")
 
     ui.newline()
+
+
+def cmd_update(args):
+    """Update the installed PAF (enpaf) package to the latest release from PyPI."""
+    import json
+    import subprocess
+    import urllib.request
+
+    from enpaf import __version__
+
+    ui.logo_small()
+    ui.header("Update PAF")
+    ui.newline()
+    ui.info(f"Installed version: {__version__}")
+
+    latest = None
+    try:
+        with urllib.request.urlopen("https://pypi.org/pypi/enpaf/json", timeout=10) as r:
+            latest = json.load(r)["info"]["version"]
+        ui.info(f"Latest on PyPI:    {latest}")
+    except Exception:
+        ui.dim("  (could not reach PyPI to check the latest version)")
+
+    if latest and latest == __version__ and not args.pre:
+        ui.newline()
+        ui.success("Already up to date 🎉")
+        return
+
+    ui.newline()
+    cmd = [sys.executable, "-m", "pip", "install", "--upgrade", "enpaf"]
+    if args.pre:
+        cmd.append("--pre")
+    ui.info("Running: " + " ".join(cmd))
+    ui.newline()
+    try:
+        rc = subprocess.call(cmd)
+    except Exception as e:
+        ui.error(f"Update failed: {e}")
+        ui.dim("  Try manually: python -m pip install --upgrade enpaf")
+        return
+
+    ui.newline()
+    if rc == 0:
+        ui.success("PAF updated! Run 'paf' to see the new version.")
+    else:
+        ui.error("Update failed — see the pip output above.")
+        ui.dim("  Try manually: python -m pip install --upgrade enpaf")
 
 
 if __name__ == "__main__":

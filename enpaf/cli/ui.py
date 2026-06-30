@@ -4,6 +4,7 @@ Beautiful console output with colors, progress bars, and ASCII art.
 """
 
 import io
+import re
 import sys
 import time
 import threading
@@ -81,32 +82,58 @@ C = Colors  # Shortcut
 
 # ─── Logo ─────────────────────────────────────────────────────
 
-LOGO = f"""
-{C.BRIGHT_MAGENTA}{C.BOLD}  ╔══════════════════════════════════════════════════════╗
-  ║                                                      ║
-  ║   ██████╗  █████╗ ███████╗                           ║
-  ║   ██╔══██╗██╔══██╗██╔════╝                           ║
-  ║   ██████╔╝███████║█████╗      {C.BRIGHT_CYAN}Python + Web → APK{C.BRIGHT_MAGENTA}    ║
-  ║   ██╔═══╝ ██╔══██║██╔══╝      {C.DIM}ENPAF Framework{C.RESET}{C.BRIGHT_MAGENTA}{C.BOLD}      ║
-  ║   ██║     ██║  ██║██║          {C.DIM}v1.0.0{C.RESET}{C.BRIGHT_MAGENTA}{C.BOLD}             ║
-  ║   ╚═╝     ╚═╝  ╚═╝╚═╝                              ║
-  ║                                                      ║
-  ╚══════════════════════════════════════════════════════╝{C.RESET}
-"""
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+_LOGO_INNER = 54  # inner width between the box borders
 
-LOGO_SMALL = f"{C.BRIGHT_MAGENTA}{C.BOLD}  🚀 PAF{C.RESET} {C.DIM}— ENPAF Framework v1.0.0{C.RESET}"
+
+def _visible_len(s: str) -> int:
+    """Rendered length of a string (ANSI color codes stripped)."""
+    return len(_ANSI_RE.sub("", s))
+
+
+def _current_version() -> str:
+    try:
+        from enpaf import __version__
+        return __version__
+    except Exception:
+        return "dev"
+
+
+def _build_logo(version: str) -> str:
+    """Build the boxed PAF banner. Every row is padded to the same width from
+    its *visible* length, so the right border lines up regardless of the version
+    string length (no more hand-counted, drifting padding)."""
+    M, B, R = C.BRIGHT_MAGENTA, C.BOLD, C.RESET
+    rows = [
+        "",
+        "   ██████╗  █████╗ ███████╗",
+        "   ██╔══██╗██╔══██╗██╔════╝",
+        f"   ██████╔╝███████║█████╗      {C.BRIGHT_CYAN}Python + Web → APK{M}",
+        f"   ██╔═══╝ ██╔══██║██╔══╝      {C.DIM}ENPAF Framework{R}{M}{B}",
+        f"   ██║     ██║  ██║██║          {C.DIM}v{version}{R}{M}{B}",
+        "   ╚═╝     ╚═╝  ╚═╝╚═╝",
+        "",
+    ]
+    lines = [f"  {M}{B}╔" + "═" * _LOGO_INNER + "╗"]
+    for row in rows:
+        pad = max(0, _LOGO_INNER - _visible_len(row))
+        lines.append("  ║" + row + " " * pad + "║")
+    lines.append("  ╚" + "═" * _LOGO_INNER + "╝" + R)
+    return "\n".join(lines)
 
 
 # ─── Print Helpers ────────────────────────────────────────────
 
 def logo():
-    """Print the full PAF logo."""
-    print(LOGO)
+    """Print the full PAF logo with the installed version."""
+    print()
+    print(_build_logo(_current_version()))
+    print()
 
 
 def logo_small():
-    """Print the small logo."""
-    print(LOGO_SMALL)
+    """Print the small logo with the installed version."""
+    print(f"{C.BRIGHT_MAGENTA}{C.BOLD}  🚀 PAF{C.RESET} {C.DIM}— ENPAF Framework v{_current_version()}{C.RESET}")
     print()
 
 

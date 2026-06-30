@@ -334,6 +334,10 @@ paf build apk      # dist/myapp-1.0.0.apk — ставим на телефон
 | `paf build aab` | Собрать **release** Android App Bundle (`.aab`) |
 | `paf doctor` | Проверить окружение (Python, JDK, Android SDK) |
 | `paf info` | Показать информацию о текущем проекте |
+| `paf update` | Обновить PAF до последней версии (PyPI) |
+
+**Флаги `update`:**
+- `--pre` — включая пред-релизные версии
 
 **Флаги `create`:**
 - `--package`, `-p` — Android package id (по умолчанию `com.enpaf.<name>`)

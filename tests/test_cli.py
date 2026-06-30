@@ -81,3 +81,41 @@ def test_build_in_non_project_dir_exits_cleanly(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["paf", "build", "apk"])
     main()  # returns without raising
+
+
+# ─── update command ───────────────────────────────────────────
+
+def test_update_dispatches_without_pre(monkeypatch):
+    import enpaf.cli.main as m
+
+    seen = {}
+    monkeypatch.setattr(m, "cmd_update", lambda args: seen.update(pre=args.pre))
+    monkeypatch.setattr(sys, "argv", ["paf", "update"])
+    m.main()
+    assert seen == {"pre": False}
+
+
+def test_update_pre_flag(monkeypatch):
+    import enpaf.cli.main as m
+
+    seen = {}
+    monkeypatch.setattr(m, "cmd_update", lambda args: seen.update(pre=args.pre))
+    monkeypatch.setattr(sys, "argv", ["paf", "update", "--pre"])
+    m.main()
+    assert seen == {"pre": True}
+
+
+# ─── logo banner ──────────────────────────────────────────────
+
+def test_logo_rows_are_aligned_regardless_of_version():
+    from enpaf.cli import ui
+
+    for version in ("1.0.0", "1.1.1", "10.20.30", "1.2.3rc1"):
+        widths = {ui._visible_len(line) for line in ui._build_logo(version).splitlines()}
+        assert len(widths) == 1, f"banner misaligned for v{version}: {widths}"
+
+
+def test_logo_includes_version():
+    from enpaf.cli import ui
+
+    assert "v2.3.4" in ui._build_logo("2.3.4")
