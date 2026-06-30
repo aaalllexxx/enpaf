@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ENPAF — Build native Android apps with Python + Web</title>
+  <meta name="description" content="ENPAF is a framework for building real Android APKs with Python and HTML/CSS/JS. Write your UI on the web stack, your logic in Python, ship a native app." />
+  <meta name="theme-color" content="#080b1e" />
+  <meta property="og:title" content="ENPAF — Python + Web → Android APK" />
+  <meta property="og:description" content="Write your UI in HTML/CSS/JS, your logic in Python, and ship a real Android APK." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/og.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- Animated backdrop -->
+  <div class="bg" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Nav -->
+  <header class="nav" id="nav">
+    <a class="nav-brand" href="#top">
+      <span class="brand-mark" id="brandMark"></span>
+      <span class="brand-name">ENPAF</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#cli">CLI</a>
+      <a href="#companion">Companion</a>
+      <a href="#docs">Docs</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="https://github.com/aaalllexxx/enpaf" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-primary" href="#quickstart">Get started</a>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-inner reveal">
+        <div class="hero-logo" id="heroLogo"></div>
+        <div class="pill-row">
+          <span class="pill">Python + Web → APK</span>
+          <span class="pill pill-dim">v1.1.1</span>
+        </div>
+        <h1 class="hero-title">
+          Build <span class="grad">native Android apps</span><br />
+          with Python&nbsp;+&nbsp;Web
+        </h1>
+        <p class="hero-sub">
+          Write your UI in HTML/CSS/JS and your logic in Python. ENPAF wires them
+          together with a two-way bridge and packages everything into a real,
+          installable <strong>APK</strong> — no Java, no WSL, no Docker required.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-lg" href="#quickstart">Get started →</a>
+          <a class="btn btn-glass btn-lg" href="https://github.com/aaalllexxx/enpaf/wiki" target="_blank" rel="noopener">Read the docs</a>
+        </div>
+
+        <div class="code-inline" data-copy="pip install enpaf">
+          <code><span class="tok-dim">$</span> pip install enpaf</code>
+          <button class="copy-btn" aria-label="Copy">Copy</button>
+        </div>
+
+        <div class="badges">
+          <span class="badge">🐍 Python 3.9+</span>
+          <span class="badge">📦 12 device modules</span>
+          <span class="badge">✅ 171 tests · CI</span>
+          <span class="badge">⚖ Free for non-commercial</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="section-head reveal">
+        <span class="eyebrow">Why ENPAF</span>
+        <h2>Everything you need to ship a mobile app in Python</h2>
+        <p class="lead">One project, one language for logic, the web for UI, and a single command to a signed APK.</p>
+      </div>
+      <div class="grid features">
+        <article class="card reveal">
+          <div class="card-ic">🐍</div>
+          <h3>Python backend</h3>
+          <p>Routes, bridge handlers, an event system and SQLite storage — your whole app logic in Python.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ic">🌐</div>
+          <h3>Web frontend</h3>
+          <p>Plain HTML/CSS/JS. No bundler, no build step — files are served as-is and load instantly.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ic">🔌</div>
+          <h3>Two-way bridge</h3>
+          <p>Call Python from JS with <code>await enpaf.call()</code>, and push events back from Python with <code>app.emit()</code>.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ic">📱</div>
+          <h3>Device capabilities</h3>
+          <p>Wi-Fi, Bluetooth, sensors, NFC, location, camera, audio, battery, notifications, biometrics &amp; permissions.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ic">🛠️</div>
+          <h3>One-command builds</h3>
+          <p><code>paf build apk</code> produces a signed, installable APK on Windows, macOS or Linux via Gradle + Chaquopy.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ic">⚡</div>
+          <h3>Live dev server</h3>
+          <p><code>paf run</code> previews the exact same app in your browser with hot-reload — iterate without a device.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section" id="how">
+      <div class="section-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2>Python and JavaScript, talking to each other</h2>
+        <p class="lead">Register a handler in Python, call it from the web UI. That's the whole model.</p>
+      </div>
+
+      <div class="code-split">
+        <div class="code-card reveal">
+          <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-file">main.py</span></div>
+<pre class="code"><span class="k">from</span> enpaf <span class="k">import</span> EnpafApp
+
+app = <span class="fn">EnpafApp</span>(__name__)
+
+<span class="dec">@app.route</span>(<span class="s">"/"</span>)
+<span class="k">def</span> <span class="fn">index</span>():
+    <span class="k">return</span> app.<span class="fn">render</span>(<span class="s">"index.html"</span>, title=app.name)
+
+<span class="dec">@app.bridge_handler</span>(<span class="s">"hello"</span>)
+<span class="k">def</span> <span class="fn">hello</span>(params):
+    name = params.<span class="fn">get</span>(<span class="s">"name"</span>, <span class="s">"World"</span>)
+    app.api.<span class="fn">vibrate</span>(<span class="n">200</span>)
+    <span class="k">return</span> {<span class="s">"message"</span>: <span class="s">f"Hi, {name}!"</span>}
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    app.<span class="fn">run</span>()</pre>
+        </div>
+
+        <div class="code-card reveal">
+          <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-file">app/js/app.js</span></div>
+<pre class="code"><span class="c">// Call Python from the web UI</span>
+<span class="k">const</span> res = <span class="k">await</span> enpaf.<span class="fn">call</span>(<span class="s">"hello"</span>, { name: <span class="s">"Alex"</span> });
+enpaf.device.<span class="fn">toast</span>(res.message);   <span class="c">// "Hi, Alex!"</span>
+
+<span class="c">// Listen for events pushed from Python</span>
+enpaf.<span class="fn">on</span>(<span class="s">"progress"</span>, (d) => updateBar(d.percent));
+
+<span class="c">// Storage, sensors, permissions — all from JS</span>
+<span class="k">await</span> enpaf.storage.<span class="fn">set</span>(<span class="s">"theme"</span>, <span class="s">"dark"</span>);
+<span class="k">const</span> acc = <span class="k">await</span> enpaf.sensors.<span class="fn">read</span>(<span class="s">"accelerometer"</span>);
+<span class="k">await</span> enpaf.permissions.<span class="fn">request</span>([<span class="s">"CAMERA"</span>]);</pre>
+        </div>
+      </div>
+
+      <div class="steps reveal">
+        <div class="step"><span class="step-n">1</span><div><b>Write</b><p>Python handlers + a web UI.</p></div></div>
+        <div class="step-arrow">→</div>
+        <div class="step"><span class="step-n">2</span><div><b>Preview</b><p><code>paf run</code> in your browser.</p></div></div>
+        <div class="step-arrow">→</div>
+        <div class="step"><span class="step-n">3</span><div><b>Ship</b><p><code>paf build apk</code> → signed APK.</p></div></div>
+      </div>
+    </section>
+
+    <!-- CLI -->
+    <section class="section" id="cli">
+      <div class="section-head reveal">
+        <span class="eyebrow">The <code>paf</code> CLI</span>
+        <h2>A small command for the whole lifecycle</h2>
+      </div>
+      <div class="cli-grid">
+        <div class="cli-row reveal"><code class="cmd">paf create &lt;name&gt;</code><span>Scaffold a new project</span></div>
+        <div class="cli-row reveal"><code class="cmd">paf run</code><span>Dev server + hot-reload</span></div>
+        <div class="cli-row reveal"><code class="cmd">paf serve</code><span>Push a build to a device over Wi-Fi</span></div>
+        <div class="cli-row reveal"><code class="cmd">paf build apk</code><span>Build an installable APK</span></div>
+        <div class="cli-row reveal"><code class="cmd">paf doctor</code><span>Check your build environment</span></div>
+        <div class="cli-row reveal"><code class="cmd">paf info</code><span>Show the project config</span></div>
+        <div class="cli-row reveal"><code class="cmd">paf update</code><span>Update PAF to the latest version</span></div>
+      </div>
+      <p class="center muted">Full reference in the <a href="https://github.com/aaalllexxx/enpaf/wiki/CLI-Reference" target="_blank" rel="noopener">CLI docs →</a></p>
+    </section>
+
+    <!-- Capabilities -->
+    <section class="section" id="capabilities">
+      <div class="section-head reveal">
+        <span class="eyebrow">Device access</span>
+        <h2>Reach the hardware — from Python or JS</h2>
+        <p class="lead">Every capability is a module on <code>app</code> and a helper on <code>enpaf</code>.</p>
+      </div>
+      <div class="chips reveal">
+        <span class="chip">📶 Wi-Fi</span>
+        <span class="chip">🔵 Bluetooth</span>
+        <span class="chip">🧭 Sensors</span>
+        <span class="chip">🏷️ NFC</span>
+        <span class="chip">📍 Location</span>
+        <span class="chip">📷 Camera / Media</span>
+        <span class="chip">🎙️ Audio</span>
+        <span class="chip">🔋 Battery</span>
+        <span class="chip">🔔 Notifications</span>
+        <span class="chip">🔐 Biometrics</span>
+        <span class="chip">✅ Permissions</span>
+        <span class="chip">📱 Device info</span>
+      </div>
+    </section>
+
+    <!-- Companion -->
+    <section class="section" id="companion">
+      <div class="companion reveal">
+        <div class="companion-text">
+          <span class="eyebrow">Companion app</span>
+          <h2>An Expo-Go-style loader for your builds</h2>
+          <p class="lead">Scan a QR from <code>paf serve</code> and the Companion downloads &amp; installs your APK over Wi-Fi — no cable.</p>
+          <ul class="ticks">
+            <li>QR scan &amp; paste-URL loading</li>
+            <li>Auto-reload watch — alerts when a build changes</li>
+            <li>Favorites &amp; recent builds</li>
+            <li>Device diagnostics + connection tester</li>
+            <li>Biometric lock</li>
+          </ul>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/aaalllexxx/enpaf/releases/latest" target="_blank" rel="noopener">Download APK</a>
+            <a class="btn btn-glass" href="https://github.com/aaalllexxx/enpaf/wiki/Companion-App" target="_blank" rel="noopener">Learn more</a>
+          </div>
+        </div>
+        <div class="companion-art">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="ph-logo" id="phoneLogo"></div>
+              <div class="ph-title">ENPAF Companion</div>
+              <div class="ph-bar"></div>
+              <div class="ph-card"></div>
+              <div class="ph-card short"></div>
+              <div class="ph-tabs"><span></span><span></span><span class="on"></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick start -->
+    <section class="section" id="quickstart">
+      <div class="section-head reveal">
+        <span class="eyebrow">Quick start</span>
+        <h2>From zero to an APK in four commands</h2>
+      </div>
+      <div class="terminal reveal">
+        <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-file">terminal</span></div>
+<pre class="code"><span class="tok-dim">$</span> pip install enpaf
+<span class="tok-dim">$</span> paf create myapp
+<span class="tok-dim">$</span> cd myapp
+<span class="tok-dim">$</span> paf run            <span class="c"># preview at http://127.0.0.1:8080</span>
+<span class="tok-dim">$</span> paf build apk      <span class="c"># → dist/myapp-1.0.0.apk</span></pre>
+      </div>
+      <p class="center muted">Building APKs needs JDK 17–21 + the Android SDK. Run <code>paf doctor</code> to check. See the <a href="https://github.com/aaalllexxx/enpaf/wiki/Installation" target="_blank" rel="noopener">installation guide →</a></p>
+    </section>
+
+    <!-- Docs -->
+    <section class="section" id="docs">
+      <div class="section-head reveal">
+        <span class="eyebrow">Documentation</span>
+        <h2>Dive into the full guide</h2>
+        <p class="lead">A detailed wiki covers everything from your first project to release signing.</p>
+      </div>
+      <div class="grid docs">
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Installation" target="_blank" rel="noopener"><h3>Installation</h3><p>Framework + the build toolchain.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Quick-Start" target="_blank" rel="noopener"><h3>Quick Start</h3><p>Your first app in 5 minutes.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Python-API" target="_blank" rel="noopener"><h3>Python API</h3><p><code>EnpafApp</code>, routes, handlers, events.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/JavaScript-Bridge" target="_blank" rel="noopener"><h3>JavaScript Bridge</h3><p>The full <code>enpaf.*</code> client SDK.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Device-Capabilities" target="_blank" rel="noopener"><h3>Device Capabilities</h3><p>Sensors, NFC, Wi-Fi, BT &amp; more.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Building-APKs" target="_blank" rel="noopener"><h3>Building APKs</h3><p>Gradle + Chaquopy, signing, release.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Architecture" target="_blank" rel="noopener"><h3>Architecture</h3><p>How dev mode &amp; Android mode work.</p><span class="go">→</span></a>
+        <a class="doc-card reveal" href="https://github.com/aaalllexxx/enpaf/wiki/Troubleshooting" target="_blank" rel="noopener"><h3>Troubleshooting</h3><p>Crashes, builds, OneDrive, JDK.</p><span class="go">→</span></a>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section">
+      <div class="cta reveal">
+        <h2>Ready to build?</h2>
+        <p class="lead">Install the framework and create your first project right now.</p>
+        <div class="code-inline wide" data-copy="pip install enpaf">
+          <code><span class="tok-dim">$</span> pip install enpaf</code>
+          <button class="copy-btn" aria-label="Copy">Copy</button>
+        </div>
+        <div class="hero-actions center-actions">
+          <a class="btn btn-primary btn-lg" href="https://github.com/aaalllexxx/enpaf" target="_blank" rel="noopener">Star on GitHub</a>
+          <a class="btn btn-glass btn-lg" href="https://pypi.org/project/enpaf/" target="_blank" rel="noopener">View on PyPI</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="brand-mark sm" id="footMark"></span>
+        <div>
+          <div class="brand-name">ENPAF</div>
+          <div class="muted small">Engine for Native Python App Framework</div>
+        </div>
+      </div>
+      <nav class="footer-links">
+        <a href="https://github.com/aaalllexxx/enpaf" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/aaalllexxx/enpaf/wiki" target="_blank" rel="noopener">Wiki</a>
+        <a href="https://pypi.org/project/enpaf/" target="_blank" rel="noopener">PyPI</a>
+        <a href="https://github.com/aaalllexxx/enpaf/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/aaalllexxx/enpaf/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/aaalllexxx/enpaf/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+      </nav>
+    </div>
+    <div class="footer-bottom muted small">
+      © 2026 ENPAF · PolyForm Noncommercial 1.0.0 — free for non-commercial use
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
