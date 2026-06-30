@@ -11,7 +11,7 @@ from importlib.metadata import version as _version, PackageNotFoundError
 try:
     __version__ = _version("enpaf")
 except PackageNotFoundError:  # pragma: no cover
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
 
 __author__ = "ENPAF Team"
 

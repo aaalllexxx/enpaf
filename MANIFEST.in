@@ -14,6 +14,7 @@ recursive-include enpaf_bridge *.js
 
 # Keep build artifacts / examples out of the distribution
 prune testapp
+prune site
 prune dist
 prune build
 prune .enpaf_build

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enpaf"
-version = "1.1.1"
+version = "1.1.2"
 description = "ENPAF — Python + Web framework for building Android APK applications"
 readme = "README.md"
 license = {text = "PolyForm Noncommercial License 1.0.0"}
@@ -52,7 +52,7 @@ test = ["pytest>=7.0.0", "pytest-cov>=4.0.0"]
 paf = "enpaf.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/aaalllexxx/enpaf"
+Homepage = "https://labunit.ru"
 Repository = "https://github.com/aaalllexxx/enpaf"
 Documentation = "https://github.com/aaalllexxx/enpaf/wiki"
 Issues = "https://github.com/aaalllexxx/enpaf/issues"

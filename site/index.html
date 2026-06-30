@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ENPAF — Build native Android apps with Python + Web</title>
-  <meta name="description" content="ENPAF is a framework for building real Android APKs with Python and HTML/CSS/JS. Write your UI on the web stack, your logic in Python, ship a native app." />
+  <title>ENPAF — Android-приложения на Python и веб-технологиях</title>
+  <meta name="description" content="ENPAF помогает собирать Android APK из Python-логики и интерфейса на HTML/CSS/JS. Быстрый старт, живой предпросмотр и сборка установочного APK одной командой." />
   <meta name="theme-color" content="#080b1e" />
   <meta property="og:title" content="ENPAF — Python + Web → Android APK" />
-  <meta property="og:description" content="Write your UI in HTML/CSS/JS, your logic in Python, and ship a real Android APK." />
+  <meta property="og:description" content="Создавайте Android-приложения с Python-логикой, веб-интерфейсом и сборкой APK одной командой." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="assets/og.png" />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
@@ -40,6 +40,10 @@
       <a href="#docs">Docs</a>
     </nav>
     <div class="nav-cta">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang-btn="ru" aria-pressed="true">RU</button>
+        <button type="button" data-lang-btn="en" aria-pressed="false">EN</button>
+      </div>
       <a class="btn btn-ghost" href="https://github.com/aaalllexxx/enpaf" target="_blank" rel="noopener">GitHub</a>
       <a class="btn btn-primary" href="#quickstart">Get started</a>
     </div>
@@ -53,7 +57,7 @@
         <div class="hero-logo" id="heroLogo"></div>
         <div class="pill-row">
           <span class="pill">Python + Web → APK</span>
-          <span class="pill pill-dim">v1.1.1</span>
+          <span class="pill pill-dim">v1.1.2</span>
         </div>
         <h1 class="hero-title">
           Build <span class="grad">native Android apps</span><br />
@@ -129,7 +133,7 @@
     <section class="section" id="how">
       <div class="section-head reveal">
         <span class="eyebrow">How it works</span>
-        <h2>Python and JavaScript, talking to each other</h2>
+        <h2>Bridge Python logic to your web UI</h2>
         <p class="lead">Register a handler in Python, call it from the web UI. That's the whole model.</p>
       </div>
 
@@ -225,7 +229,7 @@ enpaf.<span class="fn">on</span>(<span class="s">"progress"</span>, (d) => updat
       <div class="companion reveal">
         <div class="companion-text">
           <span class="eyebrow">Companion app</span>
-          <h2>An Expo-Go-style loader for your builds</h2>
+          <h2>A companion loader for your builds</h2>
           <p class="lead">Scan a QR from <code>paf serve</code> and the Companion downloads &amp; installs your APK over Wi-Fi — no cable.</p>
           <ul class="ticks">
             <li>QR scan &amp; paste-URL loading</li>
