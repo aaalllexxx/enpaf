@@ -3,14 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ENPAF — Android-приложения на Python и веб-технологиях</title>
-  <meta name="description" content="ENPAF помогает собирать Android APK из Python-логики и интерфейса на HTML/CSS/JS. Быстрый старт, живой предпросмотр и сборка установочного APK одной командой." />
+
+  <!-- Force any accidental http:// subresource to load over https (defence-in-depth). -->
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+
+  <!-- ============ Primary SEO ============ -->
+  <title>ENPAF — Android-приложения на Python и веб-технологиях (Python + Web → APK)</title>
+  <meta name="description" content="ENPAF собирает Android APK из Python-логики и интерфейса на HTML/CSS/JS. Двусторонний мост Python ↔ JS, доступ к камере, датчикам, Wi-Fi, BLE и NFC, живой предпросмотр в браузере и сборка установочного APK одной командой — без Java, WSL и Docker." />
+  <meta name="keywords" content="ENPAF, Python Android, Python APK, Python в APK, Android на Python, HTML CSS JS Android, Chaquopy, сборка APK, Python mobile framework, веб-интерфейс Android, paf build apk, кроссплатформенная разработка, WebView приложение, Python to Android" />
+  <meta name="author" content="ENPAF" />
+  <meta name="application-name" content="ENPAF" />
+  <meta name="generator" content="ENPAF" />
   <meta name="theme-color" content="#080b1e" />
-  <meta property="og:title" content="ENPAF — Python + Web → Android APK" />
-  <meta property="og:description" content="Создавайте Android-приложения с Python-логикой, веб-интерфейсом и сборкой APK одной командой." />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Crawling / indexing directives -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta name="yandex" content="index, follow" />
+  <meta name="language" content="Russian" />
+  <meta name="rating" content="General" />
+  <meta name="revisit-after" content="7 days" />
+
+  <!-- Canonical + language alternates -->
+  <link rel="canonical" href="https://enpaf.labunit.ru/" />
+  <link rel="alternate" hreflang="ru" href="https://enpaf.labunit.ru/" />
+  <link rel="alternate" hreflang="en" href="https://enpaf.labunit.ru/?lang=en" />
+  <link rel="alternate" hreflang="x-default" href="https://enpaf.labunit.ru/" />
+
+  <!-- Search-engine site verification (paste the real tokens from Search Console / Webmaster) -->
+  <!-- <meta name="google-site-verification" content="PASTE_GOOGLE_TOKEN" /> -->
+  <!-- <meta name="yandex-verification" content="PASTE_YANDEX_TOKEN" /> -->
+
+  <!-- ============ Open Graph (Facebook, Telegram, VK, WhatsApp, LinkedIn…) ============ -->
+  <meta property="og:site_name" content="ENPAF" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="assets/og.png" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:url" content="https://enpaf.labunit.ru/" />
+  <meta property="og:title" content="ENPAF — Android-приложения на Python и привычном Web UI" />
+  <meta property="og:description" content="Пишите логику на Python, интерфейс на HTML/CSS/JS — ENPAF связывает их двусторонним мостом и собирает настоящий устанавливаемый APK одной командой. Без Java, WSL и Docker." />
+  <meta property="og:image" content="https://enpaf.labunit.ru/assets/og.png" />
+  <meta property="og:image:secure_url" content="https://enpaf.labunit.ru/assets/og.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="ENPAF — Python + Web → Android APK" />
+
+  <!-- ============ Twitter / X Card ============ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ENPAF — Python + Web → Android APK" />
+  <meta name="twitter:description" content="Создавайте Android-приложения с Python-логикой, веб-интерфейсом и сборкой APK одной командой." />
+  <meta name="twitter:image" content="https://enpaf.labunit.ru/assets/og.png" />
+  <meta name="twitter:image:alt" content="ENPAF — Python + Web → Android APK" />
+
+  <!-- ============ Icons ============ -->
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/favicon.svg" />
+  <link rel="mask-icon" href="assets/favicon.svg" color="#080b1e" />
+
+  <!-- ============ Structured data (Google rich results) ============ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ENPAF",
+    "alternateName": "Engine for Native Python App Framework",
+    "description": "ENPAF собирает Android APK из Python-логики и интерфейса на HTML/CSS/JS: двусторонний мост Python ↔ JS, доступ к устройству, живой предпросмотр и сборка APK одной командой.",
+    "url": "https://enpaf.labunit.ru/",
+    "image": "https://enpaf.labunit.ru/assets/og.png",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux, Android",
+    "softwareVersion": "1.1.3",
+    "programmingLanguage": ["Python", "JavaScript"],
+    "license": "https://polyformproject.org/licenses/noncommercial/1.0.0/",
+    "downloadUrl": "https://pypi.org/project/enpaf/",
+    "codeRepository": "https://github.com/aaalllexxx/enpaf",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "ENPAF",
+      "url": "https://github.com/aaalllexxx/enpaf"
+    }
+  }
+  </script>
+
+  <!-- ============ Fonts + styles ============ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -57,7 +139,7 @@
         <div class="hero-logo" id="heroLogo"></div>
         <div class="pill-row">
           <span class="pill">Python + Web → APK</span>
-          <span class="pill pill-dim">v1.1.2</span>
+          <span class="pill pill-dim">v1.1.3</span>
         </div>
         <h1 class="hero-title">
           Build <span class="grad">native Android apps</span><br />

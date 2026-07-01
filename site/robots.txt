@@ -1,0 +1,16 @@
+# ENPAF — https://enpaf.labunit.ru/
+User-agent: *
+Allow: /
+
+# Explicitly welcome the major crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://enpaf.labunit.ru/sitemap.xml
+Host: https://enpaf.labunit.ru

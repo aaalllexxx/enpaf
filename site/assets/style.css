@@ -286,6 +286,9 @@ pre.code {
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 900px) {
   .nav-links { display: none; }
+  /* Brand stays on the left; language switch + button move to the right. */
+  .nav { justify-content: space-between; }
+  .nav-cta { margin-left: auto; }
   .features, .docs { grid-template-columns: 1fr 1fr; }
   .code-split { grid-template-columns: 1fr; }
   .cli-grid { grid-template-columns: 1fr; }

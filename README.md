@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/aaalllexxx/enpaf/actions/workflows/ci.yml/badge.svg)](https://github.com/aaalllexxx/enpaf/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.9%E2%80%933.13-blue.svg)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-1.1.2-informational.svg)](https://github.com/aaalllexxx/enpaf/releases)
+[![Version](https://img.shields.io/badge/version-1.1.3-informational.svg)](https://github.com/aaalllexxx/enpaf/releases)
 [![License: PolyForm NC 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-orange.svg)](LICENSE)
 
 **Создавайте Android-приложения на Python + HTML/CSS/JS и собирайте их в APK.**
@@ -103,7 +103,7 @@ pip install -e .                    # editable: правки сразу подх
 [Releases](https://github.com/aaalllexxx/enpaf/releases) и установите:
 
 ```bash
-pip install enpaf-1.1.2-py3-none-any.whl
+pip install enpaf-1.1.3-py3-none-any.whl
 ```
 
 ---
