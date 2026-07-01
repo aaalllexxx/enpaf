@@ -5,10 +5,12 @@ FROM python:3.12-alpine
 WORKDIR /site
 
 # Copy only the site itself (not the Docker/compose/readme files).
-COPY index.html   ./index.html
-COPY robots.txt   ./robots.txt
-COPY sitemap.xml  ./sitemap.xml
-COPY assets/      ./assets/
+COPY index.html       ./index.html
+COPY robots.txt       ./robots.txt
+COPY sitemap.xml      ./sitemap.xml
+COPY site.webmanifest ./site.webmanifest
+COPY favicon.ico      ./favicon.ico
+COPY assets/          ./assets/
 
 EXPOSE 5000
 
