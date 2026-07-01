@@ -50,6 +50,36 @@ python -m http.server 5000
 # → http://localhost:5000
 ```
 
+## Production (enpaf.labunit.ru) — TLS + security headers
+
+The public site runs this container on `127.0.0.1:5000` behind **nginx**, which
+terminates TLS. The **"connection not secure" browser flag / HSTS** is fixed at
+the nginx layer, **not** in this repo — you must apply it on the server.
+
+`nginx.conf.example` is a complete drop-in. To apply it:
+
+```bash
+# on the server
+sudo cp nginx.conf.example /etc/nginx/sites-available/enpaf.labunit.ru
+sudo ln -sf /etc/nginx/sites-available/enpaf.labunit.ru \
+            /etc/nginx/sites-enabled/enpaf.labunit.ru
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+If you already have a working TLS server block, just paste the `add_header`
+lines from the `HTTPS :443` block (HSTS/CSP/X-Frame-Options/…) into it and
+reload. The key one for "use HTTPS only" is:
+
+```nginx
+add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+```
+
+Verify afterwards:
+
+```bash
+curl -sSI https://enpaf.labunit.ru/ | grep -i strict-transport   # -> should print the header
+```
+
 ## Notes
 
 - No external runtime dependencies — fonts load from Google Fonts (with a system
