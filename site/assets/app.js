@@ -18,7 +18,7 @@
     const top = "100,36", tr = "157.2,69", br = "157.2,135",
       bot = "100,168", bl = "42.8,135", tl = "42.8,69", M = "100,102";
     return `
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+<svg viewBox="0 0 200 200" width="100%" height="100%">
   <defs>${grad(id)}</defs>
   <g stroke="url(#${id})" stroke-width="2" stroke-linejoin="round">
     <polygon points="${top} ${tr} ${M} ${tl}" fill="url(#${id})"/>
@@ -34,7 +34,7 @@
   function makeCompanionLogo() {
     const id = "lg" + _uid++;
     return `
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+<svg viewBox="0 0 200 200" width="100%" height="100%">
   <defs>${grad(id)}</defs>
   <g fill="none" stroke="url(#${id})" stroke-width="13">
     <circle cx="100" cy="100" r="78"/>
