@@ -168,7 +168,8 @@
         [".footer-links a:nth-child(4)", "Релизы"],
         [".footer-links a:nth-child(5)", "Issues"],
         [".footer-links a:nth-child(6)", "Лицензия"],
-        [".footer-bottom", "© 2026 ENPAF · PolyForm Noncommercial 1.0.0 — бесплатно для некоммерческого использования", "html"]
+        [".footer-bottom", "© 2026 ENPAF · PolyForm Noncommercial 1.0.0 — бесплатно для некоммерческого использования", "html"],
+        [".visits-label", "Посетителей:"]
       ]
     }
   };
@@ -278,4 +279,27 @@
       }
     });
   });
+
+  // ── Visitor counter (server-backed, persisted to guest.stxt) ──
+  (function visitorCounter() {
+    const box = document.getElementById("visits");
+    const out = document.getElementById("visitsCount");
+    if (!box || !out) return;
+
+    // Only count a given browser once per session, but always show the total.
+    let seen = false;
+    try { seen = sessionStorage.getItem("enpaf-visited") === "1"; } catch (e) {}
+
+    fetch("/api/visits" + (seen ? "?peek=1" : ""), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || typeof data.count !== "number") return; // static hosting: stay hidden
+        try { sessionStorage.setItem("enpaf-visited", "1"); } catch (e) {}
+        out.textContent = data.count.toLocaleString(
+          document.documentElement.lang === "en" ? "en-US" : "ru-RU"
+        );
+        box.hidden = false;
+      })
+      .catch(function () { /* no endpoint (plain static host) — leave hidden */ });
+  })();
 })();

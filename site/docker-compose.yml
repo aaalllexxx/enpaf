@@ -4,4 +4,7 @@ services:
     container_name: enpaf-site
     ports:
       - "5000:5000"
+    volumes:
+      # Persist the visitor counter across container rebuilds.
+      - ./guest.stxt:/site/guest.stxt
     restart: unless-stopped
